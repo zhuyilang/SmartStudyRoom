@@ -1,0 +1,39 @@
+﻿spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/study_room?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+
+  # Session 配置
+  session:
+    timeout: 1800   # 30分钟无操作自动退出
+
+server:
+  port: 8080
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.studyroom.entity
+  configuration:
+    map-underscore-to-camel-case: true   # 自动驼峰：user_name → userName
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 控制台打印SQL（调试用）
+  global-config:
+    db-config:
+      id-type: auto                      # 主键自增
+      logic-delete-field: deleted        # 逻辑删除字段
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# Knife4j 接口文档配置
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs

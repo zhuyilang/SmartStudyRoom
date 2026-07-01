@@ -1,4 +1,4 @@
-﻿package com.studyroom.controller;
+package com.studyroom.controller;
 
 import com.studyroom.common.Result;
 import com.studyroom.entity.User;

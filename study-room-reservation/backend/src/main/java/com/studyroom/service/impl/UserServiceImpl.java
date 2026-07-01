@@ -1,4 +1,4 @@
-﻿package com.studyroom.service.impl;
+package com.studyroom.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.studyroom.common.BusinessException;

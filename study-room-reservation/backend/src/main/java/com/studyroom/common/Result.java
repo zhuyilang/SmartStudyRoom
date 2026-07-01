@@ -1,4 +1,4 @@
-﻿package com.studyroom.common;
+package com.studyroom.common;
 
 import lombok.Data;
 

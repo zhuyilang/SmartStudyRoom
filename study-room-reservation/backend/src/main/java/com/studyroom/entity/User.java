@@ -1,4 +1,4 @@
-﻿package com.studyroom.entity;
+package com.studyroom.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

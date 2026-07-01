@@ -1,4 +1,4 @@
-﻿package com.studyroom.common;
+package com.studyroom.common;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;

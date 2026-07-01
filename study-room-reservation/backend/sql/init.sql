@@ -104,13 +104,13 @@ CREATE TABLE blacklist (
 
 -- 管理员账号: admin / 123456
 INSERT INTO user (username, password, real_name, role) VALUES
-('admin', 'e10adc3949ba59abbe56e057f20f883e', '系统管理员', 'ADMIN');
+('admin', '0fefba348b72c84c950cf8d08af6d46e', '系统管理员', 'ADMIN');
 
 -- 测试学生: 密码都是 123456
 INSERT INTO user (username, password, real_name, role) VALUES
-('zhangsan', 'e10adc3949ba59abbe56e057f20f883e', '张三', 'STUDENT'),
-('lisi', 'e10adc3949ba59abbe56e057f20f883e', '李四', 'STUDENT'),
-('wangwu', 'e10adc3949ba59abbe56e057f20f883e', '王五', 'STUDENT');
+('zhangsan', '0fefba348b72c84c950cf8d08af6d46e', '张三', 'STUDENT'),
+('lisi', '0fefba348b72c84c950cf8d08af6d46e', '李四', 'STUDENT'),
+('wangwu', '0fefba348b72c84c950cf8d08af6d46e', '王五', 'STUDENT');
 
 -- 测试校区
 INSERT INTO campus (name) VALUES ('主校区'), ('东校区');

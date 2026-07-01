@@ -1,4 +1,4 @@
-﻿package com.studyroom.interceptor;
+package com.studyroom.interceptor;
 
 import com.studyroom.entity.User;
 import org.springframework.stereotype.Component;

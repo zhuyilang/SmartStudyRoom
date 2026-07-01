@@ -1,4 +1,4 @@
-﻿package com.studyroom.config;
+package com.studyroom.config;
 
 import com.studyroom.interceptor.LoginInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;

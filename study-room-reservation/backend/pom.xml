@@ -15,7 +15,7 @@
     <artifactId>study-room-backend</artifactId>
     <version>1.0.0</version>
     <name>study-room-backend</name>
-    <description>闁哄懘缂氶崗姗€寮介垾铏柈闁煎浜欑弧鍕偓骞垮€濋。鈺冪棯閿旂虎鍚€闁荤偛妫楅柦鈺呭矗?- 闁告艾娴烽?/description>
+    <description>智能校园自习室预约管理平台 - 后端</description>
 
     <properties>
         <java.version>21</java.version>

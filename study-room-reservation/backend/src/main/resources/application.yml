@@ -5,28 +5,26 @@ spring:
     username: root
     password: 1741147728
 
-  # Session 配置
+  # Session 閰嶇疆
   session:
-    timeout: 1800   # 30分钟无操作自动退出
-
+    timeout: 1800   # 30鍒嗛挓鏃犳搷浣滆嚜鍔ㄩ€€鍑?
 server:
-  port: 3306
+  port: 8080
 
-# MyBatis-Plus 配置
+# MyBatis-Plus 閰嶇疆
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   type-aliases-package: com.studyroom.entity
   configuration:
-    map-underscore-to-camel-case: true   # 自动驼峰：user_name → userName
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 控制台打印SQL（调试用）
-  global-config:
+    map-underscore-to-camel-case: true   # 鑷姩椹煎嘲锛歶ser_name 鈫?userName
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 鎺у埗鍙版墦鍗癝QL锛堣皟璇曠敤锛?  global-config:
     db-config:
-      id-type: auto                      # 主键自增
-      logic-delete-field: deleted        # 逻辑删除字段
+      id-type: auto                      # 涓婚敭鑷
+      logic-delete-field: deleted        # 閫昏緫鍒犻櫎瀛楁
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-# Knife4j 接口文档配置
+# Knife4j 鎺ュ彛鏂囨。閰嶇疆
 knife4j:
   enable: true
   setting:

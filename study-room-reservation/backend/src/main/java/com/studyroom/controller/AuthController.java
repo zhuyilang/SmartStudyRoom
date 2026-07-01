@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
-@Tag(name = "认证模块", description = "登录、注册、退出")
+@Tag(name = "登录", description = "登录、注册、退出")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {

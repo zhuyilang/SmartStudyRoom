@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="login-container">
     <div class="login-card">
       <h1 class="login-title">📝 注册账号</h1>
@@ -42,7 +42,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { register } from '../../api/auth'
+import { register } from '../api/auth'
 
 const router = useRouter()
 const formRef = ref(null)

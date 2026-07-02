@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="student-layout">
     <!-- 顶部导航 -->
     <div class="top-nav">

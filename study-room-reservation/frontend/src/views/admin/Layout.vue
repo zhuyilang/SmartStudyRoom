@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="admin-layout">
     <!-- 侧边栏 -->
     <el-menu :default-active="activeMenu" router background-color="#304156"

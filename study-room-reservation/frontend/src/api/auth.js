@@ -1,7 +1,7 @@
 import request from './request'
 
-export function login(username, password) {
-  return request.post('/auth/login', { username, password })
+export function login(username, password, role) {
+  return request.post('/auth/login', { username, password, role })
 }
 
 export function register(data) {

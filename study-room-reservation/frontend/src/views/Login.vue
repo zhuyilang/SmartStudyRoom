@@ -12,6 +12,12 @@
           <el-input v-model="form.password" type="password" placeholder="请输入密码"
                     prefix-icon="Lock" show-password @keyup.enter="handleLogin" />
         </el-form-item>
+        <el-form-item prop="role">
+          <el-radio-group v-model="form.role">
+            <el-radio value="STUDENT">我是学生</el-radio>
+            <el-radio value="ADMIN">我是管理员</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="loading" style="width: 100%"
                      @click="handleLogin">
@@ -41,12 +47,14 @@ const loading = ref(false)
 
 const form = reactive({
   username: '',
-  password: ''
+  password: '',
+  role: 'STUDENT'
 })
 
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, min: 6, message: '密码至少6位', trigger: 'blur' }]
+  password: [{ required: true, min: 6, message: '密码至少6位', trigger: 'blur' }],
+  role: [{ required: true, message: '请选择角色', trigger: 'change' }]
 }
 
 async function handleLogin() {
@@ -55,7 +63,7 @@ async function handleLogin() {
 
   loading.value = true
   try {
-    const res = await login(form.username, form.password)
+    const res = await login(form.username, form.password, form.role)
     userStore.setUser(res.data)
     ElMessage.success('登录成功')
     // 根据角色跳转

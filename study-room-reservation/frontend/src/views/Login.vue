@@ -53,7 +53,7 @@ const form = reactive({
 
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, min: 6, message: '密码至少6位', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
   role: [{ required: true, message: '请选择角色', trigger: 'change' }]
 }
 
@@ -68,12 +68,12 @@ async function handleLogin() {
     ElMessage.success('登录成功')
     // 根据角色跳转
     if (res.data.role === 'ADMIN') {
-      router.push('/admin')
+      router.push('/admin/dashboard')
     } else {
-      router.push('/student')
+      router.push('/student/rooms')
     }
   } catch (e) {
-    // 错误已在拦截器处理
+    ElMessage.error(e?.message || '登录失败，请重试')
   } finally {
     loading.value = false
   }

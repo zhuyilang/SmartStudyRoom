@@ -1,21 +1,13 @@
 import request from './request'
 
-export function getUsageRate(params) {
-  return request.get('/report/usageRate', { params })
-}
+// 预约趋势（7 / 14 / 30 天）
+export const getReservationTrend = (params) => request.get('/admin/report/trend', { params })
 
-export function getPeakHours(params) {
-  return request.get('/report/peakHours', { params })
-}
+// 预约高峰时段（24h）
+export const getPeakHours = () => request.get('/admin/report/peak-hours')
 
-export function getReservationTrend(params) {
-  return request.get('/report/reservationTrend', { params })
-}
+// 校区分布（座位数占比）
+export const getUsageRate = () => request.get('/admin/report/campus-distribution')
 
-export function getRoomUsageRank(params) {
-  return request.get('/report/roomUsageRank', { params })
-}
-
-export function getStudentUsageStats(params) {
-  return request.get('/report/studentUsage', { params })
-}
+// 自习室使用率 TOP
+export const getRoomUsageRank = () => request.get('/admin/report/room-usage')

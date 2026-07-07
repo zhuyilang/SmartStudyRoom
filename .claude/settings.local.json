@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -c core.protectNTFS=false status --short)",
+      "Bash(git -c core.protectNTFS=false ls-files --others --exclude-standard --directory)",
+      "Bash(git -c core.protectNTFS=false ls-files --others --ignored --exclude-standard)",
+      "Bash(ls -la .gitignore)",
+      "Bash(ls -la)"
+    ]
+  }
+}

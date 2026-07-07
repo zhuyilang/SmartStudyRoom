@@ -1,114 +1,37 @@
 import request from './request'
 
-// ========== 校区管理 ==========
-export function getCampusList() {
-  return request.get('/admin/campus/list')
-}
+// ============== 校区 ==============
+export const getCampusList = () => request.get('/admin/campus/list')
+export const addCampus = (data) => request.post('/admin/campus', data)
+export const updateCampus = (data) => request.put('/admin/campus', data)
+export const deleteCampus = (id) => request.delete(`/admin/campus/${id}`)
 
-export function getCampusById(id) {
-  return request.get(`/admin/campus/${id}`)
-}
+// ============== 楼栋 ==============
+export const getBuildingList = (params) => request.get('/admin/building/list', { params })
+export const addBuilding = (data) => request.post('/admin/building', data)
+export const updateBuilding = (data) => request.put('/admin/building', data)
+export const deleteBuilding = (id) => request.delete(`/admin/building/${id}`)
 
-export function addCampus(data) {
-  return request.post('/admin/campus/add', data)
-}
+// ============== 楼层 ==============
+export const getFloorList = (params) => request.get('/admin/floor/list', { params })
+export const addFloor = (data) => request.post('/admin/floor', data)
+export const updateFloor = (data) => request.put('/admin/floor', data)
+export const deleteFloor = (id) => request.delete(`/admin/floor/${id}`)
 
-export function updateCampus(data) {
-  return request.put('/admin/campus/update', data)
-}
+// ============== 自习室 ==============
+export const getRoomList = (params) => request.get('/admin/room/list', { params })
+export const getRoomById = (id) => request.get(`/admin/room/${id}`)
+export const addRoom = (data) => request.post('/admin/room', data)
+export const updateRoom = (data) => request.put('/admin/room', data)
+export const deleteRoom = (id) => request.delete(`/admin/room/${id}`)
 
-export function deleteCampus(id) {
-  return request.delete(`/admin/campus/delete/${id}`)
-}
+// ============== 座位 ==============
+export const getSeatList = (roomId) => request.get(`/admin/room/${roomId}/seats`)
+export const addSeat = (data) => request.post('/admin/seat', data)
+export const batchAddSeats = (data) => request.post('/admin/seat/batch', data)
+export const updateSeat = (data) => request.put('/admin/seat', data)
+export const updateSeatStatus = (data) => request.patch('/admin/seat/status', data)
+export const deleteSeat = (id) => request.delete(`/admin/seat/${id}`)
 
-// ========== 楼栋管理 ==========
-export function getBuildingList(campusId) {
-  return request.get('/admin/building/list', { params: { campusId } })
-}
-
-export function getBuildingById(id) {
-  return request.get(`/admin/building/${id}`)
-}
-
-export function addBuilding(data) {
-  return request.post('/admin/building/add', data)
-}
-
-export function updateBuilding(data) {
-  return request.put('/admin/building/update', data)
-}
-
-export function deleteBuilding(id) {
-  return request.delete(`/admin/building/delete/${id}`)
-}
-
-// ========== 楼层管理 ==========
-export function getFloorList(buildingId) {
-  return request.get('/admin/floor/list', { params: { buildingId } })
-}
-
-export function getFloorById(id) {
-  return request.get(`/admin/floor/${id}`)
-}
-
-export function addFloor(data) {
-  return request.post('/admin/floor/add', data)
-}
-
-export function updateFloor(data) {
-  return request.put('/admin/floor/update', data)
-}
-
-export function deleteFloor(id) {
-  return request.delete(`/admin/floor/delete/${id}`)
-}
-
-// ========== 自习室管理 ==========
-export function getRoomList(params) {
-  return request.get('/admin/room/list', { params })
-}
-
-export function getRoomById(id) {
-  return request.get(`/admin/room/${id}`)
-}
-
-export function addRoom(data) {
-  return request.post('/admin/room/add', data)
-}
-
-export function updateRoom(data) {
-  return request.put('/admin/room/update', data)
-}
-
-export function deleteRoom(id) {
-  return request.delete(`/admin/room/delete/${id}`)
-}
-
-// ========== 座位管理 ==========
-export function getSeatList(roomId) {
-  return request.get('/admin/seat/list', { params: { roomId } })
-}
-
-export function getSeatById(id) {
-  return request.get(`/admin/seat/${id}`)
-}
-
-export function addSeat(data) {
-  return request.post('/admin/seat/add', data)
-}
-
-export function batchAddSeats(data) {
-  return request.post('/admin/seat/batchAdd', data)
-}
-
-export function updateSeat(data) {
-  return request.put('/admin/seat/update', data)
-}
-
-export function updateSeatStatus(data) {
-  return request.put('/admin/seat/updateStatus', data)
-}
-
-export function deleteSeat(id) {
-  return request.delete(`/admin/seat/delete/${id}`)
-}
+// ============== 用户 ==============
+export const getUserList = (params) => request.get('/admin/user/list', { params })

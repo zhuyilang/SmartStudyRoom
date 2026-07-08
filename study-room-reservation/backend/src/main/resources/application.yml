@@ -1,16 +1,22 @@
+﻿# ============================================
+# 合并后的配置文件
+# 注意：来自两个不同版本，密码不同
+# 新建文件夹 密码: 1741147728
+# 新建文件夹(2) 密码: Zxt2577921002
+# ============================================
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/study_room?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     username: root
-    password: 1741147728
+    password: 1741147728  # 默认用文件夹1密码，如需更改见上面注释
 
   # Session 配置
   session:
     timeout: 1800   # 30分钟无操作自动退出
 
 server:
-  port: 8080
+  port: 8081
 
 # MyBatis-Plus 配置
 mybatis-plus:

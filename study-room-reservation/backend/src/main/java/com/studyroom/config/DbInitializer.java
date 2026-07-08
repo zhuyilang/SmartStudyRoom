@@ -1,7 +1,6 @@
 package com.studyroom.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.io.ClassPathResource;
@@ -12,28 +11,36 @@ import javax.sql.DataSource;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @Component
 public class DbInitializer implements CommandLineRunner {
-
-    private static final Logger log = LoggerFactory.getLogger(DbInitializer.class);
 
     @Autowired
     private DataSource dataSource;
 
     @Override
     public void run(String... args) throws Exception {
-        log.info("=== DB Init Start ===");
+        log.info("=== 开始初始化数据库 ===");
 
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-
-        // Execute init.sql (skip MySQL-specific statements for H2)
-        ClassPathResource resource = new ClassPathResource("init.sql");
-        if (!resource.exists()) {
-            log.info("init.sql not found, skipping");
-            return;
+        // 1. 尝试MySQL方式：确保数据库存在（来自"新建文件夹(2)"版本）
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("CREATE DATABASE IF NOT EXISTS study_room DEFAULT CHARACTER SET utf8mb4");
+            stmt.execute("USE study_room");
+            log.info("数据库 study_room 已确认");
+        } catch (Exception e) {
+            log.warn("创建数据库失败（可能已有连接）: {}", e.getMessage());
         }
 
+        // 2. 用 JdbcTemplate 执行建表SQL
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+
+        ClassPathResource resource = new ClassPathResource("init.sql");
         String sql;
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
@@ -41,28 +48,16 @@ public class DbInitializer implements CommandLineRunner {
             String line;
             while ((line = reader.readLine()) != null) {
                 String trimmed = line.trim();
-                // Skip comments and MySQL-specific DDL
-                if (trimmed.startsWith("--") || trimmed.isEmpty()
-                        || trimmed.toUpperCase().startsWith("CREATE DATABASE")
-                        || trimmed.toUpperCase().startsWith("USE ")
-                        || trimmed.toUpperCase().startsWith("DROP DATABASE")
-                        || trimmed.toUpperCase().startsWith("DELIMITER")
-                        || trimmed.toUpperCase().startsWith("CREATE PROCEDURE")
-                        || trimmed.toUpperCase().startsWith("CALL ")
-                        || trimmed.toUpperCase().startsWith("DROP PROCEDURE")
-                        || trimmed.toUpperCase().startsWith("SELECT '")) {
+                if (trimmed.startsWith("--") || trimmed.startsWith("USE") || trimmed.isEmpty()
+                        || trimmed.startsWith("DELIMITER") || trimmed.startsWith("CREATE PROCEDURE")
+                        || trimmed.startsWith("CALL") || trimmed.startsWith("DROP PROCEDURE")
+                        || trimmed.startsWith("SELECT '")) {
                     continue;
                 }
                 sb.append(line).append("\n");
             }
             sql = sb.toString();
         }
-
-        // Fix SQL for H2: user→sys_user, strip MySQL-specific syntax
-        sql = sql.replaceAll("(?i) COMMENT\\s+'[^']*'", "");
-        sql = sql.replaceAll("(?i) COMMENT\\s+\"[^\"]*\"", "");
-        // Replace table name 'user' → 'sys_user' (NOT column names like user_id)
-        sql = sql.replaceAll("(?i)(?<![a-zA-Z])user(?![a-zA-Z_0-9])", "sys_user");
 
         String[] statements = sql.split(";");
         for (String statement : statements) {
@@ -71,61 +66,39 @@ public class DbInitializer implements CommandLineRunner {
             try {
                 jdbcTemplate.execute(trimmed);
             } catch (Exception e) {
-                log.debug("Skip (may already exist): {}", e.getMessage());
+                log.warn("跳过（可能已存在）: {}", e.getMessage());
             }
         }
 
-        // Auto-generate seats for each room (replaces MySQL stored procedure)
-        java.util.List<java.util.Map<String, Object>> rooms = jdbcTemplate.queryForList(
-                "SELECT id, total_rows, total_cols FROM room");
-        for (java.util.Map<String, Object> room : rooms) {
-            Long roomId = ((Number) room.get("id")).longValue();
-            int rows = ((Number) room.get("total_rows")).intValue();
-            int cols = ((Number) room.get("total_cols")).intValue();
-            Integer count = jdbcTemplate.queryForObject(
-                    "SELECT COUNT(*) FROM seat WHERE room_id = ?", Integer.class, roomId);
-            if (count != null && count > 0) {
-                log.info("Room {} already has seats, skipping", roomId);
-                continue;
-            }
-            for (int r = 1; r <= rows; r++) {
-                for (int c = 1; c <= cols; c++) {
-                    jdbcTemplate.update(
-                            "INSERT INTO seat (room_id, row_num, col_num, status) VALUES (?, ?, ?, 0)",
-                            roomId, r, c);
+        // 3. 自动生成座位
+        try {
+            List<Map<String, Object>> rooms = jdbcTemplate.queryForList(
+                    "SELECT id, total_rows, total_cols FROM room");
+            for (Map<String, Object> room : rooms) {
+                Long roomId = ((Number) room.get("id")).longValue();
+                int rows = ((Number) room.get("total_rows")).intValue();
+                int cols = ((Number) room.get("total_cols")).intValue();
+
+                Integer count = jdbcTemplate.queryForObject(
+                        "SELECT COUNT(*) FROM seat WHERE room_id = ?", Integer.class, roomId);
+                if (count != null && count > 0) {
+                    log.info("自习室 {} 已有座位，跳过", roomId);
+                    continue;
                 }
+
+                for (int r = 1; r <= rows; r++) {
+                    for (int c = 1; c <= cols; c++) {
+                        jdbcTemplate.update(
+                                "INSERT INTO seat (room_id, row_num, col_num, status) VALUES (?, ?, ?, 0)",
+                                roomId, r, c);
+                    }
+                }
+                log.info("自习室 {} 座位已生成 ({}x{})", roomId, rows, cols);
             }
-            log.info("Room {} seats generated ({}x{})", roomId, rows, cols);
+        } catch (Exception e) {
+            log.info("座位自动生成跳过（room表可能不存在或格式不同）: {}", e.getMessage());
         }
 
-        // Also execute data.sql for initial test data
-        ClassPathResource dataResource = new ClassPathResource("data.sql");
-        if (dataResource.exists()) {
-            log.info("Executing data.sql...");
-            String dataSql;
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(dataResource.getInputStream(), StandardCharsets.UTF_8))) {
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    String trimmed = line.trim();
-                    if (trimmed.startsWith("--") || trimmed.isEmpty()) continue;
-                    sb.append(line).append("\n");
-                }
-                dataSql = sb.toString();
-            }
-            String[] dataStatements = dataSql.split(";");
-            for (String statement : dataStatements) {
-                String trimmed = statement.trim();
-                if (trimmed.isEmpty()) continue;
-                try {
-                    jdbcTemplate.execute(trimmed);
-                } catch (Exception e) {
-                    log.debug("Skip data insert: {}", e.getMessage());
-                }
-            }
-        }
-
-        log.info("=== DB Init Complete ===");
+        log.info("=== 数据库初始化完成 ===");
     }
 }

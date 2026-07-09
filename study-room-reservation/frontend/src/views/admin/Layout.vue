@@ -34,7 +34,12 @@
           <el-icon><HomeFilled /></el-icon>
           <span>自习室管理</span>
         </el-menu-item>
+        <el-menu-item index="/admin/admin-manage">
+          <el-icon><User /></el-icon>
+          <span>管理员管理</span>
+        </el-menu-item>
         <el-menu-item index="/admin/report">
+
           <el-icon><TrendCharts /></el-icon>
           <span>数据报表</span>
         </el-menu-item>

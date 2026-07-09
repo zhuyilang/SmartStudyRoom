@@ -32,6 +32,19 @@ public class AuthController {
         return Result.success("注册成功");
     }
 
+
+    @Operation(summary = "Create admin account")
+    @PostMapping("/createAdmin")
+    public Result<?> createAdmin(@RequestBody User user, HttpSession session) {
+        User loginUser = (User) session.getAttribute("loginUser");
+        if (loginUser == null || !"ADMIN".equals(loginUser.getRole())) {
+            return Result.error(403, "No permission, admin only");
+        }
+        user.setRole("ADMIN");
+        userService.register(user);
+        return Result.success("Admin account created");
+    }
+
     @Operation(summary = "退出登录")
     @GetMapping("/logout")
     public Result<?> logout(HttpSession session) {

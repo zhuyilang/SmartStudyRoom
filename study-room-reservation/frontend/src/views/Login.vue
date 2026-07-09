@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h1 class="login-title">🏫 校园自习室预约系统</h1>
+      <h1 class="login-title">校园自习室预约系统</h1>
       <p class="login-subtitle">欢迎回来，请登录你的账号</p>
 
       <el-form ref="formRef" :model="form" :rules="rules" label-width="0" size="large">
@@ -11,12 +11,6 @@
         <el-form-item prop="password">
           <el-input v-model="form.password" type="password" placeholder="请输入密码"
                     prefix-icon="Lock" show-password @keyup.enter="handleLogin" />
-        </el-form-item>
-        <el-form-item prop="role">
-          <el-radio-group v-model="form.role">
-            <el-radio value="STUDENT">我是学生</el-radio>
-            <el-radio value="ADMIN">我是管理员</el-radio>
-          </el-radio-group>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="loading" style="width: 100%"
@@ -47,14 +41,12 @@ const loading = ref(false)
 
 const form = reactive({
   username: '',
-  password: '',
-  role: 'STUDENT'
+  password: ''
 })
 
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-  role: [{ required: true, message: '请选择角色', trigger: 'change' }]
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 }
 
 async function handleLogin() {
@@ -63,14 +55,13 @@ async function handleLogin() {
 
   loading.value = true
   try {
-    const res = await login(form.username, form.password, form.role)
+    const res = await login(form.username, form.password)
     userStore.setUser(res.data)
     ElMessage.success('登录成功')
-    // 根据角色跳转
     if (res.data.role === 'ADMIN') {
       router.push('/admin/dashboard')
     } else {
-      router.push('/student/rooms')
+      router.push('/student/roomList')
     }
   } catch (e) {
     ElMessage.error(e?.message || '登录失败，请重试')

@@ -1,7 +1,7 @@
 <template>
   <div class="login-container">
     <div class="login-card">
-      <h1 class="login-title">📝 注册账号</h1>
+      <h1 class="login-title">注册账号</h1>
       <p class="login-subtitle">加入校园自习室预约平台</p>
 
       <el-form ref="formRef" :model="form" :rules="rules" label-width="0" size="large">
@@ -16,12 +16,6 @@
         </el-form-item>
         <el-form-item prop="confirmPassword">
           <el-input v-model="form.confirmPassword" type="password" placeholder="请再次输入密码" show-password />
-        </el-form-item>
-        <el-form-item prop="role">
-          <el-radio-group v-model="form.role">
-            <el-radio value="STUDENT">我是学生</el-radio>
-            <el-radio value="ADMIN">我是管理员</el-radio>
-          </el-radio-group>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" :loading="loading" style="width: 100%"
@@ -52,8 +46,7 @@ const form = reactive({
   username: '',
   realName: '',
   password: '',
-  confirmPassword: '',
-  role: 'STUDENT'
+  confirmPassword: ''
 })
 
 const validateConfirmPassword = (rule, value, callback) => {
@@ -77,8 +70,7 @@ const rules = {
   confirmPassword: [
     { required: true, message: '请再次输入密码', trigger: 'blur' },
     { validator: validateConfirmPassword, trigger: 'blur' }
-  ],
-  role: [{ required: true, message: '请选择角色', trigger: 'change' }]
+  ]
 }
 
 async function handleRegister() {
@@ -90,13 +82,12 @@ async function handleRegister() {
     await register({
       username: form.username,
       realName: form.realName,
-      password: form.password,
-      role: form.role
+      password: form.password
     })
     ElMessage.success('注册成功，即将跳转登录页')
     setTimeout(() => router.push('/login'), 1500)
   } catch (e) {
-    // 错误已在拦截器处理
+    // error handled by interceptor
   } finally {
     loading.value = false
   }

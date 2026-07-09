@@ -1,91 +1,48 @@
 <template>
-  <div class="student-layout">
-    <!-- 顶部导航 -->
-    <div class="top-nav">
-      <span class="nav-title">🏫 校园自习室预约</span>
-      <el-menu :default-active="activeMenu" mode="horizontal" router
-               background-color="#409eff" text-color="#fff" active-text-color="#fff"
-               class="nav-menu">
-        <el-menu-item index="/student/rooms">自习室列表</el-menu-item>
-        <el-menu-item index="/student/my">我的预约</el-menu-item>
-      </el-menu>
-      <div class="nav-right">
-        <span class="user-name">👤 {{ userStore.user?.realName || '同学' }}</span>
-        <el-button text style="color: #fff" @click="handleLogout">退出</el-button>
+  <el-container style="height: 100vh;">
+    <el-header style="display: flex; justify-content: space-between; align-items: center; background:#409EFF; color:#fff; padding:0 30px;">
+      <div style="display: flex;align-items:center;gap:12px;">
+        <el-icon size="24"><School /></el-icon>
+        <span style="font-size:20px; font-weight:bold; color:#fff;">智能校园自习室预约</span>
+        <el-button type="primary" plain size="small" @click="$router.push('/student/roomList')" style="color:#fff;border-color:#fff;background:transparent;margin-left:24px;">自习室列表</el-button>
+        <el-button type="primary" plain size="small" @click="$router.push('/student/myRes')" style="color:#fff;border-color:#fff;background:transparent;">我的预约</el-button>
       </div>
-    </div>
-
-    <!-- 内容区 -->
-    <div class="content">
+      <div style="display:flex;align-items:center;gap:12px; color:#fff;">
+        <span style="font-size:14px;">{{ userInfo.username ?? '加载中' }}</span>
+        <el-button text type="info" style="color:#fff;" @click="logoutHandle">退出登录</el-button>
+      </div>
+    </el-header>
+    <el-main style="background:#f5f7fa;padding:20px;">
       <router-view />
-    </div>
-  </div>
+    </el-main>
+  </el-container>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessageBox } from 'element-plus'
-import { logout } from '../../api/auth'
-import { useUserStore } from '../../stores/user'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { getCurrentUser, logout } from '../../api/auth'
 
-const route = useRoute()
+import { ElMessage } from 'element-plus'
+
 const router = useRouter()
-const userStore = useUserStore()
+const userInfo = ref({})
 
-const activeMenu = computed(() => route.path)
+// 获取当前登录用户
+const getUser = async () => {
+  const res = await getCurrentUser()
+  if (res.code === 200) {
+    userInfo.value = res.data
+  } else {
+    router.push('/login')
+  }
+}
+onMounted(getUser)
 
-async function handleLogout() {
-  await ElMessageBox.confirm('确定要退出登录吗？', '提示', { type: 'warning' })
+// 退出登录
+const logoutHandle = async () => {
   await logout()
-  userStore.clearUser()
+  ElMessage.success('已退出登录')
   router.push('/login')
 }
 </script>
-
-<style scoped>
-.student-layout {
-  min-height: 100vh;
-  background: #f0f2f5;
-}
-
-.top-nav {
-  display: flex;
-  align-items: center;
-  background: #409eff;
-  padding: 0 24px;
-  height: 60px;
-}
-
-.nav-title {
-  color: #fff;
-  font-size: 18px;
-  font-weight: bold;
-  margin-right: 32px;
-  white-space: nowrap;
-}
-
-.nav-menu {
-  flex: 1;
-  border-bottom: none !important;
-  background: transparent !important;
-}
-
-.nav-menu .el-menu-item {
-  border-bottom: none !important;
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: #fff;
-  white-space: nowrap;
-}
-
-.content {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 0 20px;
-}
-</style>

@@ -7,8 +7,7 @@ import java.util.List;
 public interface ReservationService {
 
     /** Book a seat */
-    Reservation reserve(Long userId, Long seatId, Long roomId,
-                        String startTime, String endTime);
+    Reservation reserve(Long userId, Long seatId, Long roomId);
 
     /** Cancel a reservation */
     void cancel(Long reservationId, Long userId);
@@ -24,4 +23,5 @@ public interface ReservationService {
 
     /** Get all active reservations */
     List<Reservation> getActiveReservations();
+    void release(Long reservationId, Long userId);
 }

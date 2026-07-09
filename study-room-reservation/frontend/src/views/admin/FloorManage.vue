@@ -153,13 +153,13 @@ async function loadList() {
   loading.value = true
   try {
     const { data } = await getFloorList()
-    list.value = data
+    list.value = data.records || data
   } finally { loading.value = false }
 }
 async function loadAux() {
   const [{ data: cs }, { data: bs }] = await Promise.all([getCampusList(), getBuildingList()])
-  campuses.value = cs
-  buildings.value = bs
+  campuses.value = cs.records || cs
+  buildings.value = bs.records || bs
 }
 function resetFilter() {
   filter.campusId = null

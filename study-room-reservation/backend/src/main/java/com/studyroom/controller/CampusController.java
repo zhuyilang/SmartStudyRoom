@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "校区管理", description = "校区的增删改查")
 @RestController
-@RequestMapping("/api/v1/campus")
+@RequestMapping("/api/admin/campus")
 public class CampusController {
 
     @Autowired
     private CampusService campusService;
 
     @Operation(summary = "分页查询校区")
-    @GetMapping("/page")
+    @GetMapping("/list")
     public Result<IPage<Campus>> page(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,

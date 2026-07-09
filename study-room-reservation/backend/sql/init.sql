@@ -19,9 +19,12 @@ CREATE TABLE user (
 -- 2. 校区表
 DROP TABLE IF EXISTS campus;
 CREATE TABLE campus (
-    id          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '校区ID',
-    name        VARCHAR(50) NOT NULL COMMENT '校区名称',
-    create_time DATETIME    DEFAULT CURRENT_TIMESTAMP
+                        id           BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '校区ID',
+                        name         VARCHAR(50)  NOT NULL COMMENT '校区名称',
+                        address      VARCHAR(200) NOT NULL COMMENT '校区地址',
+                        description  VARCHAR(500) COMMENT '校区描述',
+                        create_time  DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                        update_time  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '上次更新时间'
 ) COMMENT '校区表';
 
 -- 3. 楼栋表

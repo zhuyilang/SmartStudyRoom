@@ -127,14 +127,14 @@ async function loadList() {
   loading.value = true
   try {
     const { data } = await getBuildingList()
-    list.value = data
+    list.value = data.records || data
   } finally {
     loading.value = false
   }
 }
 async function loadCampuses() {
   const { data } = await getCampusList()
-  campuses.value = data
+  campuses.value = data.records || data
 }
 function resetFilter() {
   filter.campusId = null
@@ -153,7 +153,7 @@ function openEdit(row) {
 }
 function resetForm() {
   formRef.value?.resetFields()
-  Object.assign(form, { id: null, campusId: null, name: '', floorCount: 1, description: '' })
+  Object.assign(form, { id: null, campusId: null, name: '',  description: '' })
 }
 async function handleSubmit() {
   await formRef.value.validate()

@@ -41,27 +41,37 @@
       <el-table-column label="所属楼栋" min-width="140">
         <template #default="{ row }">{{ getBuildingNameByFloor(row.floorId) }}</template>
       </el-table-column>
-      <el-table-column prop="capacity" label="座位数" width="90" align="center" />
+      <el-table-column label="行数" width="80" align="center">
+        <template #default="{ row }">{{ row.rowCount || row.totalRows }}</template>
+      </el-table-column>
+      <el-table-column label="列数" width="80" align="center">
+        <template #default="{ row }">{{ row.colCount || row.totalCols }}</template>
+      </el-table-column>
       <el-table-column label="类型" width="120" align="center">
         <template #default="{ row }">
-          <el-tag :type="row.type === 1 ? 'warning' : row.type === 3 ? 'danger' : 'info'" size="small">
+          <el-tag :type="row.type === 1 ? 'warning' : 'info'" size="small">
             {{ ROOM_TYPE_LABEL[row.type] }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="设施" width="120" align="center">
+      <el-table-column label="设施" width="160" align="center">
         <template #default="{ row }">
-          <el-icon v-if="row.hasPower" color="#67c23a"><Check /></el-icon>
-          <span v-else class="icon-disabled">—</span>
-          <span style="margin: 0 6px">|</span>
-          <el-icon v-if="row.hasNetwork" color="#67c23a"><Connection /></el-icon>
-          <span v-else class="icon-disabled">—</span>
-          <span style="margin-left: 4px; font-size: 12px; color: #909399">电/网</span>
+          <el-tooltip content="电源">
+            <el-icon v-if="row.hasPower" color="#67c23a" style="margin:0 3px"><Lightning /></el-icon>
+            <span v-else class="icon-disabled" style="margin:0 3px">—</span>
+          </el-tooltip>
+          <el-tooltip content="网络">
+            <el-icon v-if="row.hasNetwork" color="#67c23a" style="margin:0 3px"><Connection /></el-icon>
+            <span v-else class="icon-disabled" style="margin:0 3px">—</span>
+          </el-tooltip>
+          <el-tooltip content="电脑">
+            <el-icon v-if="row.hasComputer" color="#409eff" style="margin:0 3px"><Monitor /></el-icon>
+            <span v-else class="icon-disabled" style="margin:0 3px">—</span>
+          </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="240" fixed="right" align="center">
+      <el-table-column label="操作" width="160" fixed="right" align="center">
         <template #default="{ row }">
-          <el-button type="success" link :icon="Grid" @click="goSeats(row)">座位</el-button>
           <el-button type="primary" link :icon="Edit" @click="openEdit(row)">编辑</el-button>
           <el-button type="danger" link :icon="Delete" @click="handleDelete(row)">删除</el-button>
         </template>
@@ -103,8 +113,11 @@
         <el-form-item label="房间号" prop="name">
           <el-input v-model="form.name" placeholder="如：101" maxlength="10" />
         </el-form-item>
-        <el-form-item label="座位数" prop="capacity">
-          <el-input-number v-model="form.capacity" :min="1" :max="500" style="width: 100%" />
+        <el-form-item label="行数" prop="rowCount">
+          <el-input-number v-model="form.rowCount" :min="1" :max="20" style="width: 100%" />
+        </el-form-item>
+        <el-form-item label="列数" prop="colCount">
+          <el-input-number v-model="form.colCount" :min="1" :max="20" style="width: 100%" />
         </el-form-item>
         <el-form-item label="类型" prop="type">
           <el-radio-group v-model="form.type">
@@ -114,6 +127,7 @@
         <el-form-item label="设施">
           <el-checkbox :model-value="!!form.hasPower" @update:model-value="v => form.hasPower = v ? 1 : 0">电源</el-checkbox>
           <el-checkbox :model-value="!!form.hasNetwork" @update:model-value="v => form.hasNetwork = v ? 1 : 0">网络</el-checkbox>
+          <el-checkbox :model-value="!!form.hasComputer" @update:model-value="v => form.hasComputer = v ? 1 : 0">电脑</el-checkbox>
         </el-form-item>
         <el-form-item label="描述">
           <el-input v-model="form.description" type="textarea" :rows="2" maxlength="200" />
@@ -131,7 +145,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, Refresh, Edit, Delete, Grid, Check, Connection } from '@element-plus/icons-vue'
+import { Plus, Search, Refresh, Edit, Delete, Grid, Check, Connection, Monitor, Lightning } from '@element-plus/icons-vue'
 import {
   getRoomList, addRoom, updateRoom, deleteRoom,
   getBuildingList, getFloorList, getCampusList
@@ -154,14 +168,15 @@ const submitting = ref(false)
 const formRef = ref(null)
 const form = reactive({
   id: null, campusId: null, buildingId: null, floorId: null,
-  name: '', capacity: 60, type: 0, hasPower: 1, hasNetwork: 1, description: ''
+  name: '', rowCount: 5, colCount: 6, type: 1, hasPower: 1, hasNetwork: 1, hasComputer: 1, description: ''
 })
 const rules = {
   campusId: [{ required: true, message: '请选择校区', trigger: 'change' }],
   buildingId: [{ required: true, message: '请选择楼栋', trigger: 'change' }],
   floorId: [{ required: true, message: '请选择楼层', trigger: 'change' }],
   name: [{ required: true, message: '请输入房间号', trigger: 'blur' }],
-  capacity: [{ required: true, message: '请输入座位数', trigger: 'blur' }],
+  rowCount: [{ required: true, message: "请输入行数", trigger: "blur" }],
+        colCount: [{ required: true, message: "请输入列数", trigger: "blur" }],
   type: [{ required: true, message: '请选择类型', trigger: 'change' }]
 }
 
@@ -194,12 +209,12 @@ async function loadList() {
   loading.value = true
   try {
     const { data } = await getRoomList()
-    list.value = data
+    list.value = data.records || data
   } finally { loading.value = false }
 }
 async function loadAux() {
   const [{ data: cs }, { data: bs }, { data: fs }] = await Promise.all([getCampusList(), getBuildingList(), getFloorList()])
-  campuses.value = cs; buildings.value = bs; floors.value = fs
+  campuses.value = cs.records || cs; buildings.value = bs.records || bs; floors.value = fs.records || fs
 }
 function resetFilter() {
   Object.assign(filter, { campusId: null, buildingId: null, floorId: null, keyword: '' })
@@ -209,6 +224,10 @@ function resetFilter() {
 function onCampusChange() { filter.buildingId = null; filter.floorId = null }
 function onBuildingChange() { filter.floorId = null }
 function onFormCampusChange() { form.buildingId = null; form.floorId = null }
+function goSeats(row) {
+  router.push(`/admin/room/${row.id}/seats`)
+}
+
 function onFormBuildingChange() { form.floorId = null }
 function openAdd() { editing.value = false; dialogVisible.value = true }
 function openEdit(row) {
@@ -228,7 +247,7 @@ function resetForm() {
   formRef.value?.resetFields()
   Object.assign(form, {
     id: null, campusId: null, buildingId: null, floorId: null,
-    name: '', capacity: 60, type: 0, hasPower: 1, hasNetwork: 1, description: ''
+    name: '', rowCount: 5, colCount: 6, type: 1, hasPower: 1, hasNetwork: 1, hasComputer: 0, description: ''
   })
 }
 async function handleSubmit() {
@@ -253,10 +272,6 @@ async function handleDelete(row) {
   ElMessage.success('已删除')
   loadList()
 }
-function goSeats(row) {
-  router.push(`/admin/room/${row.id}/seats`)
-}
-
 onMounted(async () => {
   await loadAux()
   await loadList()

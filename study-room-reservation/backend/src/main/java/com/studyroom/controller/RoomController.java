@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "自习室管理", description = "自习室的增删改查")
 @RestController
-@RequestMapping("/api/v1/room")
+@RequestMapping("/api/admin/room")
 public class RoomController {
 
     @Autowired
     private RoomService roomService;
 
     @Operation(summary = "分页查询自习室")
-    @GetMapping("/page")
+    @GetMapping("/list")
     public Result<IPage<Room>> page(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,

@@ -22,14 +22,14 @@ public class DashboardController {
     public Result<List<Map<String, Object>>> seatStatus() {
         String sql = "SELECT r.id AS roomId, r.name AS roomName, " +
                 "b.name AS buildingName, " +
-                "r.total_rows * r.total_cols AS totalSeats, " +
+                "r.row_count * r.col_count AS totalSeats, " +
                 "COALESCE(SUM(CASE WHEN s.status = 1 THEN 1 ELSE 0 END), 0) AS occupiedSeats, " +
                 "COALESCE(SUM(CASE WHEN s.status = 0 THEN 1 ELSE 0 END), 0) AS freeSeats " +
                 "FROM room r " +
                 "LEFT JOIN floor f ON r.floor_id = f.id " +
                 "LEFT JOIN building b ON f.building_id = b.id " +
                 "LEFT JOIN seat s ON s.room_id = r.id " +
-                "GROUP BY r.id, r.name, b.name, r.total_rows, r.total_cols " +
+                "GROUP BY r.id, r.name, b.name, r.row_count, r.col_count " +
                 "ORDER BY r.id";
 
         List<Map<String, Object>> result = jdbcTemplate.queryForList(sql);
@@ -39,10 +39,10 @@ public class DashboardController {
     @Operation(summary = "获取指定房间实时座位详情")
     @GetMapping("/room/{id}")
     public Result<Map<String, Object>> roomDetail(@PathVariable Long id) {
-        String roomSql = "SELECT id, name, total_rows AS rowCount, total_cols AS colCount FROM room WHERE id = ?";
+        String roomSql = "SELECT id, name, row_count AS rowCount, col_count AS colCount FROM room WHERE id = ?";
         Map<String, Object> roomInfo = jdbcTemplate.queryForMap(roomSql, id);
 
-        String seatSql = "SELECT row_num AS row, col_num AS col, status FROM seat " +
+        String seatSql = "SELECT row_num AS `row`, col_num AS `col`, status FROM seat " +
                 "WHERE room_id = ? ORDER BY row_num, col_num";
         List<Map<String, Object>> seats = jdbcTemplate.queryForList(seatSql, id);
 

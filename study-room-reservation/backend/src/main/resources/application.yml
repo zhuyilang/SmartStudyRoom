@@ -1,4 +1,4 @@
-﻿# ============================================
+# ============================================
 # 合并后的配置文件
 # 注意：来自两个不同版本，密码不同
 # 新建文件夹 密码: 1741147728
@@ -14,6 +14,12 @@ spring:
   # Session 配置
   session:
     timeout: 1800   # 30分钟无操作自动退出
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
 
 server:
   port: 8081

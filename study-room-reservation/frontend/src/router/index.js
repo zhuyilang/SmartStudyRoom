@@ -58,6 +58,12 @@ const routes = [
         meta: { title: '座位管理' }
       },
       {
+        path: 'admin-manage',
+        name: 'AdminManage',
+        component: () => import('../views/admin/AdminManage.vue'),
+        meta: { title: '管理员管理' }
+      },
+      {
         path: 'report',
         name: 'Report',
         component: () => import('../views/admin/Report.vue'),
@@ -73,22 +79,22 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/student/rooms'
+        redirect: '/student/roomList'
       },
       {
-        path: 'rooms',
+        path: 'roomList',
         name: 'RoomList',
         component: () => import('../views/student/RoomList.vue'),
         meta: { title: '自习室列表' }
       },
       {
-        path: 'room/:roomId',
+        path: 'seat/:roomId',
         name: 'SeatSelect',
         component: () => import('../views/student/SeatSelect.vue'),
         meta: { title: '选择座位' }
       },
       {
-        path: 'my',
+        path: 'myRes',
         name: 'MyReservation',
         component: () => import('../views/student/MyReservation.vue'),
         meta: { title: '我的预约' }

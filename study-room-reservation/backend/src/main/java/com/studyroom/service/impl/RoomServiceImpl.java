@@ -10,16 +10,22 @@ import com.studyroom.mapper.RoomMapper;
 import com.studyroom.service.RoomService;
 import com.studyroom.service.SeatService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements RoomService {
 
     @Autowired
     private SeatService seatService;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     @Override
     public IPage<Room> pageRoom(Page<Room> page, Long floorId, String name) {
@@ -50,10 +56,17 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
 
         // 自动生成座位（根据 rowCount × colCount）
         if (room.getRowCount() != null && room.getColCount() != null) {
-            int totalSeats = room.getRowCount() * room.getColCount();
-            // 调用 SeatService 批量生成座位，关联到该自习室
-            // TODO: 需要修改 Seat 表，增加 roomId 字段（确认一下表中是否有 roomId）
-            // 如果 Seat 表有 roomId，这里调用 seatService.batchCreateByRoom(room.getId(), totalSeats);
+            int rows = room.getRowCount();
+            int cols = room.getColCount();
+            // 使用 JDBC 批量插入座位（row_num, col_num）
+            String sql = "INSERT INTO seat (room_id, row_num, col_num, status) VALUES (?, ?, ?, 0)";
+            List<Object[]> batchArgs = new ArrayList<>();
+            for (int r = 1; r <= rows; r++) {
+                for (int c = 1; c <= cols; c++) {
+                    batchArgs.add(new Object[]{room.getId(), r, c});
+                }
+            }
+            jdbcTemplate.batchUpdate(sql, batchArgs);
         }
     }
 

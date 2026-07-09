@@ -23,18 +23,15 @@ public class SeatReleaseTask {
     @Autowired private BlacklistService blacklistService;
     @Autowired private SeatStatusService seatStatusService;
 
-    /**
-     * 每5分钟检查一次超时未签到的预约，自动释放座位并记录爽约
-     */
+    /** Auto-release overdue reservations */
     @Scheduled(cron = "0 */5 * * * ?")
     @Transactional
     public void releaseTimeoutSeats() {
-        log.info("=== 定时任务：检查超时预约 ===");
+        log.info("=== Check overdue reservations ===");
 
-        // 查询所有已预约但超过开始时间15分钟仍未签到的记录
         String sql = "SELECT * FROM reservation WHERE status = ? " +
-                     "AND start_time < ? AND sign_time IS NULL";
-        LocalDateTime deadline = LocalDateTime.now().minusMinutes(15);
+                     "AND create_time < ? AND sign_time IS NULL";
+        LocalDateTime deadline = LocalDateTime.now().minusMinutes(30);
 
         try {
             List<Reservation> timeoutList = jdbcTemplate.query(sql,
@@ -50,27 +47,24 @@ public class SeatReleaseTask {
 
             int released = 0;
             for (Reservation r : timeoutList) {
-                // 更新预约状态为超时
                 jdbcTemplate.update(
                         "UPDATE reservation SET status = ? WHERE id = ?",
                         Reservation.STATUS_TIMEOUT, r.getId());
 
-                // 释放座位
                 seatStatusService.releaseSeat(r.getSeatId());
 
-                // 记录爽约
                 blacklistService.recordMiss(r.getUserId());
 
                 released++;
-                log.info("超时释放: reservationId={}, userId={}, seatId={}",
+                log.info("Released: reservationId={}, userId={}, seatId={}",
                         r.getId(), r.getUserId(), r.getSeatId());
             }
 
             if (released > 0) {
-                log.info("本次释放 {} 个超时预约", released);
+                log.info("Released {} overdue reservations", released);
             }
         } catch (Exception e) {
-            log.error("释放超时座位失败", e);
+            log.error("Failed to release overdue seats", e);
         }
     }
 }

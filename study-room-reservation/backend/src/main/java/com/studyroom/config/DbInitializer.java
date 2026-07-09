@@ -25,20 +25,20 @@ public class DbInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        log.info("=== 开始初始化数据库 ===");
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 
-        // 1. 尝试MySQL方式：确保数据库存在（来自"新建文件夹(2)"版本）
-        try (Connection conn = dataSource.getConnection();
-             Statement stmt = conn.createStatement()) {
-            stmt.execute("CREATE DATABASE IF NOT EXISTS study_room DEFAULT CHARACTER SET utf8mb4");
-            stmt.execute("USE study_room");
-            log.info("数据库 study_room 已确认");
+        // 检查数据库是否已有数据（通过 user 表是否有记录判断）
+        try {
+            Integer userCount = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM user", Integer.class);
+            if (userCount != null && userCount > 0) {
+                log.info("数据库已有数据（user表{}条记录），跳过初始化", userCount);
+                return;
+            }
         } catch (Exception e) {
-            log.warn("创建数据库失败（可能已有连接）: {}", e.getMessage());
+            log.info("user表不存在，需要执行初始化");
         }
 
-        // 2. 用 JdbcTemplate 执行建表SQL
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        log.info("=== 开始初始化数据库 ===");
 
         ClassPathResource resource = new ClassPathResource("init.sql");
         String sql;
@@ -70,7 +70,7 @@ public class DbInitializer implements CommandLineRunner {
             }
         }
 
-        // 3. 自动生成座位
+        // 自动生成座位
         try {
             List<Map<String, Object>> rooms = jdbcTemplate.queryForList(
                     "SELECT id, total_rows, total_cols FROM room");
@@ -82,7 +82,7 @@ public class DbInitializer implements CommandLineRunner {
                 Integer count = jdbcTemplate.queryForObject(
                         "SELECT COUNT(*) FROM seat WHERE room_id = ?", Integer.class, roomId);
                 if (count != null && count > 0) {
-                    log.info("自习室 {} 已有座位，跳过", roomId);
+                    log.info("自习室{} 已有座位，跳过", roomId);
                     continue;
                 }
 
@@ -93,7 +93,7 @@ public class DbInitializer implements CommandLineRunner {
                                 roomId, r, c);
                     }
                 }
-                log.info("自习室 {} 座位已生成 ({}x{})", roomId, rows, cols);
+                log.info("自习室{} 座位已生成({}x{})", roomId, rows, cols);
             }
         } catch (Exception e) {
             log.info("座位自动生成跳过（room表可能不存在或格式不同）: {}", e.getMessage());

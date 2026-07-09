@@ -26,9 +26,8 @@ public class StudentController {
 
         StringBuilder sql = new StringBuilder(
                 "SELECT r.id AS roomId, r.name AS roomName, b.name AS buildingName, c.name AS campusName, " +
-                "r.total_rows AS totalRows, r.total_cols AS totalCols, " +
-                "r.total_rows * r.total_cols AS totalSeats, " +
-                "r.open_time AS openTime, r.close_time AS closeTime, " +
+                "r.row_count AS totalRows, r.col_count AS totalCols, " +
+                "r.row_count * r.col_count AS totalSeats, " +
                 "COALESCE((SELECT COUNT(*) FROM seat s WHERE s.room_id = r.id AND s.status = 0), 0) AS freeSeats " +
                 "FROM room r " +
                 "LEFT JOIN floor f ON r.floor_id = f.id " +
@@ -58,9 +57,9 @@ public class StudentController {
     @GetMapping("/room/{id}")
     public Result<Map<String, Object>> roomDetail(@PathVariable Long id) {
         String sql = "SELECT r.id AS roomId, r.name AS roomName, b.name AS buildingName, c.name AS campusName, " +
-                "r.total_rows AS totalRows, r.total_cols AS totalCols, " +
-                "r.total_rows * r.total_cols AS totalSeats, " +
-                "r.open_time AS openTime, r.close_time AS closeTime, r.description, " +
+                "r.row_count AS totalRows, r.col_count AS totalCols, " +
+                "r.row_count * r.col_count AS totalSeats, " +
+                "r.description, " +
                 "COALESCE((SELECT COUNT(*) FROM seat s WHERE s.room_id = r.id AND s.status = 0), 0) AS freeSeats " +
                 "FROM room r " +
                 "LEFT JOIN floor f ON r.floor_id = f.id " +
@@ -78,10 +77,10 @@ public class StudentController {
             @RequestParam Long roomId,
             @RequestParam(required = false) String date) {
 
-        String roomSql = "SELECT id, name, total_rows AS totalRows, total_cols AS totalCols FROM room WHERE id = ?";
+        String roomSql = "SELECT id, name, row_count AS totalRows, col_count AS totalCols FROM room WHERE id = ?";
         Map<String, Object> roomInfo = jdbcTemplate.queryForMap(roomSql, roomId);
 
-        String seatSql = "SELECT row_num AS row, col_num AS col, status FROM seat " +
+        String seatSql = "SELECT id, row_num AS `row`, col_num AS `col`, status FROM seat " +
                 "WHERE room_id = ? ORDER BY row_num, col_num";
         List<Map<String, Object>> seats = jdbcTemplate.queryForList(seatSql, roomId);
 

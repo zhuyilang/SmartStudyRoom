@@ -28,10 +28,8 @@ public class ReservationController {
         Long userId = getUserId(session);
         Long seatId = Long.valueOf(body.get("seatId").toString());
         Long roomId = Long.valueOf(body.get("roomId").toString());
-        String startTime = body.get("startTime").toString();
-        String endTime = body.get("endTime").toString();
 
-        Reservation r = reservationService.reserve(userId, seatId, roomId, startTime, endTime);
+        Reservation r = reservationService.reserve(userId, seatId, roomId);
         return Result.success("预约成功", r);
     }
 
@@ -49,6 +47,14 @@ public class ReservationController {
         Long userId = getUserId(session);
         reservationService.signIn(id, userId);
         return Result.success("签到成功");
+    }
+
+    @Operation(summary = "释放座位")
+    @PostMapping("/release/{id}")
+    public Result<?> release(@PathVariable Long id, HttpSession session) {
+        Long userId = getUserId(session);
+        reservationService.release(id, userId);
+        return Result.success("座位已释放");
     }
 
     @Operation(summary = "我的预约列表")

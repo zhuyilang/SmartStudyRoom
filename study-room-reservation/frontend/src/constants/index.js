@@ -1,4 +1,4 @@
-// 业务常量（与后端 enum 保持一致）
+﻿// 业务常量（与后端 enum 保持一致）
 
 // 座位状态：0 空闲 1 已预约 2 使用中 3 维修
 export const SEAT_STATUS = {
@@ -20,18 +20,14 @@ export const SEAT_STATUS_COLOR = {
   [SEAT_STATUS.MAINTENANCE]: '#909399'
 }
 
-// 自习室类型：0 普通 1 静音 2 讨论 3 24h
+// 自习室类型：1 静音 2 讨论
 export const ROOM_TYPE = {
-  NORMAL: 0,
   SILENT: 1,
-  DISCUSSION: 2,
-  ALL_NIGHT: 3
+  DISCUSSION: 2
 }
 export const ROOM_TYPE_LABEL = {
-  [ROOM_TYPE.NORMAL]: '普通',
   [ROOM_TYPE.SILENT]: '静音',
-  [ROOM_TYPE.DISCUSSION]: '讨论',
-  [ROOM_TYPE.ALL_NIGHT]: '24小时'
+  [ROOM_TYPE.DISCUSSION]: '讨论'
 }
 
 // 角色

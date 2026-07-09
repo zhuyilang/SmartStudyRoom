@@ -12,7 +12,7 @@ export function register(data) {
 
 // 退出登录
 export function logout() {
-  return request.post('/auth/logout')
+  return request.get('/auth/logout')
 }
 
 // 当前用户信息

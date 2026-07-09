@@ -107,7 +107,7 @@ async function loadList() {
   loading.value = true
   try {
     const { data } = await getCampusList()
-    list.value = data
+    list.value = data.records || data
   } finally {
     loading.value = false
   }

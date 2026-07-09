@@ -15,14 +15,14 @@ import java.util.List;
 
 @Tag(name = "楼栋管理", description = "楼栋的增删改查")
 @RestController
-@RequestMapping("/api/v1/building")
+@RequestMapping("/api/admin/building")
 public class BuildingController {
 
     @Autowired
     private BuildingService buildingService;
 
     @Operation(summary = "分页查询楼栋")
-    @GetMapping("/page")
+    @GetMapping("/list")
     public Result<IPage<Building>> page(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
@@ -59,13 +59,4 @@ public class BuildingController {
         return Result.success("删除成功");
     }
 
-    @Operation(summary = "根据校区ID查询楼栋列表（下拉用）")
-    @GetMapping("/list/{campusId}")
-    public Result<List<Building>> listByCampus(@PathVariable Long campusId) {
-        LambdaQueryWrapper<Building> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Building::getCampusId, campusId);
-        wrapper.eq(Building::getStatus, 1);
-        wrapper.orderByAsc(Building::getName);
-        return Result.success(buildingService.list(wrapper));
-    }
 }

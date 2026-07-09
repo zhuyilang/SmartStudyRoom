@@ -1,4 +1,4 @@
-﻿-- ============================================
+-- ============================================
 -- 校园自习室预约系统 - 数据库初始化脚本
 -- 使用前请先创建数据库: CREATE DATABASE study_room;
 -- ============================================
@@ -19,9 +19,12 @@ CREATE TABLE user (
 -- 2. 校区表
 DROP TABLE IF EXISTS campus;
 CREATE TABLE campus (
-    id          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '校区ID',
-    name        VARCHAR(50) NOT NULL COMMENT '校区名称',
-    create_time DATETIME    DEFAULT CURRENT_TIMESTAMP
+                        id           BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '校区ID',
+                        name         VARCHAR(50)  NOT NULL COMMENT '校区名称',
+                        address      VARCHAR(200) NOT NULL COMMENT '校区地址',
+                        description  VARCHAR(500) COMMENT '校区描述',
+                        create_time  DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                        update_time  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '上次更新时间'
 ) COMMENT '校区表';
 
 -- 3. 楼栋表
@@ -30,8 +33,11 @@ CREATE TABLE building (
     id          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '楼栋ID',
     campus_id   BIGINT      NOT NULL COMMENT '所属校区',
     name        VARCHAR(100) NOT NULL COMMENT '楼栋名称',
-    create_time DATETIME    DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (campus_id) REFERENCES campus(id)
+    floor_count  INT NOT NULL DEFAULT 0 COMMENT '楼层数',
+    description  VARCHAR(500) COMMENT '校区描述',
+    create_time  DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '上次更新时间',
+      FOREIGN KEY (campus_id) REFERENCES campus(id) ON DELETE CASCADE
 ) COMMENT '楼栋表';
 
 -- 4. 楼层表
@@ -39,23 +45,30 @@ DROP TABLE IF EXISTS floor;
 CREATE TABLE floor (
     id           BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '楼层ID',
     building_id  BIGINT      NOT NULL COMMENT '所属楼栋',
+    name        VARCHAR(100) NOT NULL COMMENT '楼层名称',
     floor_number INT         NOT NULL COMMENT '楼层号',
-    create_time  DATETIME    DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (building_id) REFERENCES building(id)
+    description  VARCHAR(500) COMMENT '楼层描述',
+    create_time  DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time  DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '上次更新时间',
+    FOREIGN KEY (building_id) REFERENCES building(id) ON DELETE CASCADE
 ) COMMENT '楼层表';
 
 -- 5. 自习室表
 DROP TABLE IF EXISTS room;
 CREATE TABLE room (
-    id          BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '自习室ID',
-    floor_id    BIGINT      NOT NULL COMMENT '所属楼层',
-    name        VARCHAR(100) NOT NULL COMMENT '自习室名称',
-    total_rows  INT         NOT NULL DEFAULT 5 COMMENT '座位行数',
-    total_cols  INT         NOT NULL DEFAULT 4 COMMENT '座位列数',
-    open_time   TIME        DEFAULT '08:00:00' COMMENT '开放时间',
-    close_time  TIME        DEFAULT '22:00:00' COMMENT '关闭时间',
-    create_time DATETIME    DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (floor_id) REFERENCES floor(id)
+      description  VARCHAR(500) COMMENT '自习室描述',
+      id            BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '自习室ID',
+      floor_id      BIGINT       NOT NULL COMMENT '所属楼层',
+      name          VARCHAR(100) NOT NULL COMMENT '自习室名称',
+      row_count     INT          NOT NULL DEFAULT 5 COMMENT '座位行数',     -- 改
+      col_count     INT          NOT NULL DEFAULT 4 COMMENT '座位列数',     -- 改
+      type          INT          NOT NULL DEFAULT 0 COMMENT '0静音1讨论',
+      has_power     INT          NOT NULL DEFAULT 1 COMMENT '有电源',       -- 改
+      has_network   INT          NOT NULL DEFAULT 1 COMMENT '有网络',       -- 改
+      has_computer  INT          NOT NULL DEFAULT 0 COMMENT '有电脑',       -- 改
+      create_time   DATETIME     DEFAULT CURRENT_TIMESTAMP,
+      update_time   DATETIME     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (floor_id) REFERENCES floor(id) ON DELETE CASCADE
 ) COMMENT '自习室表';
 
 -- 6. 座位表
@@ -67,7 +80,7 @@ CREATE TABLE seat (
     col_num     INT         NOT NULL COMMENT '列号',
     status      TINYINT     DEFAULT 0 COMMENT '状态: 0空闲 1已占用 2维修中',
     create_time DATETIME    DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (room_id) REFERENCES room(id)
+    FOREIGN KEY (room_id) REFERENCES room(id) ON DELETE CASCADE
 ) COMMENT '座位表';
 
 -- 7. 预约表
@@ -82,9 +95,9 @@ CREATE TABLE reservation (
     status      TINYINT     DEFAULT 0 COMMENT '状态: 0已预约 1已签到 2已取消 3已超时 4已完成',
     sign_time   DATETIME    DEFAULT NULL COMMENT '签到时间',
     create_time DATETIME    DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user(id),
-    FOREIGN KEY (seat_id) REFERENCES seat(id),
-    FOREIGN KEY (room_id) REFERENCES room(id)
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE,
+    FOREIGN KEY (seat_id) REFERENCES seat(id) ON DELETE CASCADE,
+    FOREIGN KEY (room_id) REFERENCES room(id) ON DELETE CASCADE
 ) COMMENT '预约表';
 
 -- 8. 黑名单表
@@ -95,7 +108,7 @@ CREATE TABLE blacklist (
     miss_count   INT         DEFAULT 1 COMMENT '累计爽约次数',
     banned_until DATETIME    DEFAULT NULL COMMENT '禁止预约截止时间',
     create_time  DATETIME    DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES user(id)
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 ) COMMENT '黑名单表';
 
 -- ============================================
@@ -112,28 +125,6 @@ INSERT INTO user (username, password, real_name, role) VALUES
 ('lisi', '0fefba348b72c84c950cf8d08af6d46e', '李四', 'STUDENT'),
 ('wangwu', '0fefba348b72c84c950cf8d08af6d46e', '王五', 'STUDENT');
 
--- 测试校区
-INSERT INTO campus (name) VALUES ('主校区'), ('东校区');
-
--- 测试楼栋
-INSERT INTO building (campus_id, name) VALUES
-(1, '图书馆'), (1, '第一教学楼'),
-(2, '东区图书馆'), (2, '东区教学楼');
-
--- 测试楼层
-INSERT INTO floor (building_id, floor_number) VALUES
-(1, 1), (1, 2), (1, 3),
-(2, 1), (2, 2),
-(3, 1), (3, 2),
-(4, 1);
-
--- 测试自习室
-INSERT INTO room (floor_id, name, total_rows, total_cols) VALUES
-(1, '图书馆101', 5, 6),
-(1, '图书馆102', 4, 5),
-(2, '图书馆201', 6, 6),
-(4, '一教101', 5, 4),
-(4, '一教102', 4, 5);
 
 -- 批量生成座位（存储过程）
 DELIMITER //
@@ -145,7 +136,7 @@ BEGIN
     DECLARE v_cols INT;
     DECLARE i INT;
     DECLARE j INT;
-    DECLARE cur CURSOR FOR SELECT id, total_rows, total_cols FROM room;
+    DECLARE cur CURSOR FOR SELECT id, row_count, col_count FROM room;
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
     OPEN cur;

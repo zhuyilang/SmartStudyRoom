@@ -17,14 +17,14 @@ import java.util.Map;
 
 @Tag(name = "座位管理", description = "座位的增删改查 + 批量生成")
 @RestController
-@RequestMapping("/api/v1/seat")
+@RequestMapping("/api/admin/seat")
 public class SeatController {
 
     @Autowired
     private SeatService seatService;
 
     @Operation(summary = "分页查询座位")
-    @GetMapping("/page")
+    @GetMapping("/list")
     public Result<IPage<Seat>> page(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,

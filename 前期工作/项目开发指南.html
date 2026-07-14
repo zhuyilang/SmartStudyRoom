@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能校园自习室预约平台 - 项目开发指南</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+            background: #f0f2f5;
+            color: #333;
+            padding: 30px;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .header {
+            background: linear-gradient(135deg, #409eff, #337ecc);
+            color: white;
+            padding: 40px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { font-size: 16px; opacity: 0.9; }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .section h2 {
+            font-size: 20px;
+            color: #409eff;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f0fe;
+        }
+        .section h3 {
+            font-size: 16px;
+            color: #555;
+            margin: 18px 0 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .card {
+            background: #f8faff;
+            border: 1px solid #e8f0fe;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .card h4 { color: #409eff; margin-bottom: 10px; font-size: 15px; }
+        .card ul { padding-left: 18px; }
+        .card li { margin: 6px 0; font-size: 14px; line-height: 1.6; }
+
+        .tag {
+            display: inline-block;
+            background: #ecf5ff;
+            color: #409eff;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin: 2px;
+        }
+        .tag-green { background: #e8f8e8; color: #67c23a; }
+        .tag-orange { background: #fdf6ec; color: #e6a23c; }
+        .tag-red { background: #fef0f0; color: #f56c6c; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin: 12px 0;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th { background: #f8faff; color: #409eff; font-weight: 600; }
+        tr:hover { background: #fafafa; }
+
+        .step-list { padding-left: 20px; }
+        .step-list li { margin: 10px 0; line-height: 1.7; font-size: 14px; }
+        .step-list li strong { color: #409eff; }
+
+        code {
+            background: #f4f4f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #d63200;
+        }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 12px 0;
+        }
+        pre .comment { color: #6a9955; }
+        pre .keyword { color: #569cd6; }
+        pre .string { color: #ce9178; }
+
+        .file-tree {
+            background: #fafafa;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.8;
+        }
+        .file-tree .folder { color: #d4a84b; }
+        .file-tree .file { color: #555; }
+        .file-tree .highlight { background: #fff3cd; padding: 0 4px; border-radius: 3px; }
+
+        .role-box {
+            border-left: 4px solid #409eff;
+            padding: 16px 20px;
+            background: #f8faff;
+            border-radius: 0 8px 8px 0;
+            margin: 12px 0;
+        }
+        .role-box.b { border-color: #67c23a; background: #f0f9f0; }
+        .role-box.c { border-color: #e6a23c; background: #fdf6ec; }
+        .role-box.d { border-color: #f56c6c; background: #fef0f0; }
+        .role-box.e { border-color: #909399; background: #f4f4f5; }
+
+        .warning {
+            background: #fdf6ec;
+            border: 1px solid #faecd8;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin: 12px 0;
+            font-size: 14px;
+        }
+        .warning strong { color: #e6a23c; }
+
+        @media (max-width: 700px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            body { padding: 14px; }
+            .header { padding: 24px; }
+            .section { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="header">
+        <h1>📚 智能校园自习室预约管理平台</h1>
+        <p>项目开发指南 · 团队协作手册</p>
+    </div>
+
+    <!-- 一、项目概况 -->
+    <div class="section">
+        <h2>一、项目概况</h2>
+        <p style="font-size:14px;line-height:1.8;margin-bottom:12px;">
+            做一个校园自习室预约网站，解决占座、空位不明的痛点。
+            学生可以在线查看自习室座位、预约选座、签到使用；
+            管理员可以管理校区/楼栋/自习室/座位，查看使用率报表和热力图。
+        </p>
+
+        <h3>技术栈总览</h3>
+        <div style="margin:12px 0;">
+            <span class="tag tag-green">Spring Boot 2.7.18</span>
+            <span class="tag tag-green">MyBatis-Plus 3.5.3</span>
+            <span class="tag tag-green">MySQL 8.0</span>
+            <span class="tag tag-green">Maven</span>
+            <span class="tag tag-green">Knife4j</span>
+            <span class="tag tag-green">Lombok</span>
+            <span class="tag">Vue 3</span>
+            <span class="tag">Vite</span>
+            <span class="tag">Element Plus</span>
+            <span class="tag">Axios</span>
+            <span class="tag">Vue Router</span>
+            <span class="tag">Pinia</span>
+            <span class="tag">ECharts</span>
+        </div>
+
+        <div class="grid-2" style="margin-top:14px;">
+            <div class="card">
+                <h4>🔧 后端工具</h4>
+                <ul>
+                    <li>IntelliJ IDEA (Community)</li>
+                    <li>Navicat / DBeaver</li>
+                    <li>Postman</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h4>🎨 前端工具</h4>
+                <ul>
+                    <li>VS Code</li>
+                    <li>Node.js 18+</li>
+                    <li>Chrome 开发者工具</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 二、项目结构 -->
+    <div class="section">
+        <h2>二、项目结构</h2>
+        <div class="file-tree">
+study-room-reservation/<br>
+│<br>
+├── <span class="folder">backend/</span>　　　　　　← 后端 (Java Spring Boot)<br>
+│&nbsp;&nbsp; ├── pom.xml　　　　　　　 ← Maven 依赖配置<br>
+│&nbsp;&nbsp; ├── <span class="folder">sql/</span>　　　　　　　　　← 数据库建表脚本<br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; └── init.sql<br>
+│&nbsp;&nbsp; └── <span class="folder">src/main/</span><br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ├── <span class="folder">java/com/studyroom/</span><br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="folder">common/</span>　　　 ← 工具类 (Result, 异常处理, MD5)<br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="folder">config/</span>　　　　← 配置 (跨域, 拦截器, 接口文档)<br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="folder">controller/</span>　　← API 接口<br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="folder">entity/</span>　　　　← 实体类 (对应数据库表)<br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="folder">mapper/</span>　　　　← 数据库操作<br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="folder">service/</span>　　　 ← 业务逻辑 (+ impl/)<br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="folder">interceptor/</span>　 ← 登录拦截<br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="folder">task/</span>　　　　　← 定时任务<br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; └── StudyRoomApplication.java ← 启动类<br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; └── <span class="folder">resources/</span><br>
+│&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; └── application.yml ← 数据库/端口配置<br>
+│<br>
+└── <span class="folder">frontend/</span>　　　　　　← 前端 (Vue 3)<br>
+&nbsp;&nbsp;&nbsp; ├── package.json<br>
+&nbsp;&nbsp;&nbsp; ├── vite.config.js<br>
+&nbsp;&nbsp;&nbsp; └── <span class="folder">src/</span><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ├── <span class="folder">api/</span>　　　　　 ← 接口调用封装<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ├── <span class="folder">router/</span>　　　 ← 路由配置<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ├── <span class="folder">stores/</span>　　　 ← 状态管理 (登录状态)<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ├── <span class="folder">views/</span>　　　　← 页面<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="folder">admin/</span>　　　 ← 管理端页面<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; │&nbsp;&nbsp; └── <span class="folder">student/</span>　　← 学生端页面<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ├── App.vue<br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; └── main.js
+        </div>
+    </div>
+
+    <!-- 三、数据库 -->
+    <div class="section">
+        <h2>三、数据库 8 张表</h2>
+        <table>
+            <tr><th>表名</th><th>作用</th><th>说明</th></tr>
+            <tr><td>user</td><td>用户表</td><td>学生 + 管理员，role 字段区分</td></tr>
+            <tr><td>campus</td><td>校区表</td><td>如：主校区、东校区</td></tr>
+            <tr><td>building</td><td>楼栋表</td><td>外键关联 campus</td></tr>
+            <tr><td>floor</td><td>楼层表</td><td>外键关联 building</td></tr>
+            <tr><td>room</td><td>自习室表</td><td>外键关联 floor，含行数列数</td></tr>
+            <tr><td>seat</td><td>座位表</td><td>外键关联 room，status: 0空闲/1占用/2维修</td></tr>
+            <tr><td>reservation</td><td>预约表</td><td>外键关联 user+seat+room，status: 0已预约/1已签到/2已取消/3已超时/4已完成</td></tr>
+            <tr><td>blacklist</td><td>黑名单表</td><td>外键关联 user，纪录爽约次数和封禁时间</td></tr>
+        </table>
+        <div class="warning">
+            <strong>💡 不需要手动建库建表！</strong> 启动后端时会自动创建数据库和所有表，并插入测试数据。
+        </div>
+    </div>
+
+    <!-- 四、API 推荐接口一览 -->
+    <div class="section">
+        <h2>四、API 推荐接口一览</h2>
+        <table>
+            <tr><th>模块</th><th>方法</th><th>路径</th><th>说明</th><th>负责</th></tr>
+            <tr><td rowspan="4">认证</td><td>POST</td><td>/api/auth/login</td><td>登录</td><td>A ✅</td></tr>
+            <tr><td>POST</td><td>/api/auth/register</td><td>注册</td><td>A ✅</td></tr>
+            <tr><td>GET</td><td>/api/auth/logout</td><td>退出</td><td>A ✅</td></tr>
+            <tr><td>GET</td><td>/api/auth/currentUser</td><td>当前用户</td><td>A ✅</td></tr>
+            <tr><td rowspan="4">校区</td><td>GET</td><td>/api/campus/list</td><td>校区列表</td><td>B</td></tr>
+            <tr><td>POST</td><td>/api/campus</td><td>新增校区</td><td>B</td></tr>
+            <tr><td>PUT</td><td>/api/campus</td><td>修改校区</td><td>B</td></tr>
+            <tr><td>DELETE</td><td>/api/campus/{id}</td><td>删除校区</td><td>B</td></tr>
+            <tr><td rowspan="3">楼栋</td><td>GET</td><td>/api/building/byCampus/{id}</td><td>按校区查楼栋</td><td>B</td></tr>
+            <tr><td>POST</td><td>/api/building</td><td>新增楼栋</td><td>B</td></tr>
+            <tr><td>DELETE</td><td>/api/building/{id}</td><td>删除楼栋</td><td>B</td></tr>
+            <tr><td rowspan="3">楼层</td><td>GET</td><td>/api/floor/byBuilding/{id}</td><td>按楼栋查楼层</td><td>B</td></tr>
+            <tr><td>POST</td><td>/api/floor</td><td>新增楼层</td><td>B</td></tr>
+            <tr><td>DELETE</td><td>/api/floor/{id}</td><td>删除楼层</td><td>B</td></tr>
+            <tr><td rowspan="3">自习室</td><td>GET</td><td>/api/room/list</td><td>自习室列表（可按楼层筛）</td><td>B</td></tr>
+            <tr><td>POST</td><td>/api/room</td><td>新增（自动生成座位）</td><td>B</td></tr>
+            <tr><td>DELETE</td><td>/api/room/{id}</td><td>删除自习室</td><td>B</td></tr>
+            <tr><td rowspan="2">座位</td><td>GET</td><td>/api/seat/grid/{roomId}</td><td>座位网格数据</td><td>B</td></tr>
+            <tr><td>PUT</td><td>/api/seat/status</td><td>修改座位状态</td><td>B</td></tr>
+            <tr><td rowspan="4">预约</td><td>POST</td><td>/api/reservation</td><td>创建预约</td><td>C</td></tr>
+            <tr><td>PUT</td><td>/api/reservation/sign/{id}</td><td>签到</td><td>C</td></tr>
+            <tr><td>PUT</td><td>/api/reservation/cancel/{id}</td><td>取消预约</td><td>C</td></tr>
+            <tr><td>GET</td><td>/api/reservation/my</td><td>我的预约列表</td><td>C</td></tr>
+            <tr><td>黑名单</td><td>GET</td><td>/api/blacklist/list</td><td>黑名单列表</td><td>C</td></tr>
+            <tr><td rowspan="2">看板</td><td>GET</td><td>/api/dashboard/seatStatus</td><td>座位占用统计</td><td>C</td></tr>
+            <tr><td>GET</td><td>/api/dashboard/roomDetail/{id}</td><td>房间座位详情</td><td>C</td></tr>
+            <tr><td rowspan="2">报表</td><td>GET</td><td>/api/report/usageRate</td><td>使用率统计</td><td>B</td></tr>
+            <tr><td>GET</td><td>/api/report/peakHours</td><td>热门时段</td><td>B</td></tr>
+        </table>
+    </div>
+
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,43 +1,62 @@
 <template>
-  <div class="room-page">
+  <el-card shadow="hover" class="page-card">
+    <template #header>
+      <div class="page-header">
+        <span class="page-title">🚪 自习室列表</span>
+      </div>
+    </template>
+
     <!-- 筛选栏 -->
-    <el-card style="margin-bottom:20px;">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <el-select v-model="form.campusId" placeholder="选择校区" @change="campusChange" :loading="campusLoading">
-            <el-option v-for="item in campusList" :key="item.id" :label="item.name" :value="item.id"/>
-          </el-select>
-        </el-col>
-        <el-col :span="6">
-          <el-select v-model="form.buildingId" placeholder="选择楼栋" @change="buildingChange" :loading="buildingLoading">
-            <el-option v-for="item in buildingList" :key="item.id" :label="item.name" :value="item.id"/>
-          </el-select>
-        </el-col>
-      </el-row>
-    </el-card>
+    <el-form :inline="true" :model="form" class="filter-bar">
+      <el-form-item label="校区">
+        <el-select v-model="form.campusId" placeholder="选择校区" @change="campusChange" :loading="campusLoading" style="width: 160px">
+          <el-option v-for="item in campusList" :key="item.id" :label="item.name" :value="item.id"/>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="楼栋">
+        <el-select v-model="form.buildingId" placeholder="选择楼栋" @change="buildingChange" :loading="buildingLoading" style="width: 160px">
+          <el-option v-for="item in buildingList" :key="item.id" :label="item.name" :value="item.id"/>
+        </el-select>
+      </el-form-item>
+    </el-form>
 
     <!-- 自习室卡片 -->
-    <el-row :gutter="20" v-loading="roomLoading" v-if="form.buildingId">
-      <el-col :span="6" v-for="room in roomList" :key="room.roomId">
+    <el-row :gutter="16" v-loading="roomLoading" v-if="form.buildingId">
+      <el-col :xs="24" :sm="12" :md="8" :lg="6" v-for="room in roomList" :key="room.roomId">
         <el-card shadow="hover" class="room-card" @click="$router.push(`/student/seat/${room.roomId}`)">
-          <h3>{{ room.roomName }}</h3>
-          <p>位置：{{ room.campusName }} {{ room.buildingName }}</p>
-          <p>总座位：{{ room.totalRows * room.totalCols }}</p>
-          <el-tag :type="room.freeSeats > 0 ? 'success' : 'info'">
-            {{ room.freeSeats > 0 ? '可预约' : '已满' }}
-          </el-tag>
+          <div class="room-header">
+            <span class="room-name">{{ room.roomName }}</span>
+            <el-tag :type="room.freeSeats > 0 ? 'success' : 'danger'" size="small">
+              {{ room.freeSeats > 0 ? '可预约' : '已满' }}
+            </el-tag>
+          </div>
+          <div class="room-info">
+            <div class="info-item">
+              <el-icon><Location /></el-icon>
+              <span>{{ room.campusName }} {{ room.buildingName }}</span>
+            </div>
+            <div class="info-item">
+              <el-icon><Grid /></el-icon>
+              <span>总座位：{{ room.totalRows * room.totalCols }}</span>
+            </div>
+            <div class="info-item">
+              <el-icon><User /></el-icon>
+              <span>空闲：{{ room.freeSeats }}</span>
+            </div>
+          </div>
         </el-card>
       </el-col>
     </el-row>
     <el-empty v-if="form.buildingId && roomList.length === 0 && !roomLoading" description="暂无自习室数据" />
-    <el-empty v-else description="请先选择楼栋查看自习室" />
-  </div>
+    <el-empty v-else-if="!form.buildingId" description="请先选择楼栋查看自习室" />
+  </el-card>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getCampusList, getBuildingByCampus, getRoomList } from '../../api/student'
+
 const form = ref({ campusId: '', buildingId: '' })
 const campusList = ref([])
 const buildingList = ref([])
@@ -98,11 +117,65 @@ const buildingChange = async () => {
 </script>
 
 <style scoped>
+.page-card {
+  border-radius: 10px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.filter-bar {
+  margin-bottom: 16px;
+}
+
 .room-card {
   cursor: pointer;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  transition: all 0.3s;
 }
+
 .room-card:hover {
   transform: translateY(-4px);
-  transition: 0.3s;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.room-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.room-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #606266;
+}
+
+.info-item .el-icon {
+  color: #909399;
 }
 </style>

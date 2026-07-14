@@ -35,7 +35,7 @@
 
       <div v-loading="loading" class="seat-grid-wrapper">
         <div v-if="!seats.length" class="empty">
-          <el-empty description="该自习室暂无座位，点击右上角"批量添加"开始创建" />
+          <el-empty description="该自习室暂无座位，点击右上角&quot;批量添加&quot;开始创建" />
         </div>
         <div v-else class="seat-grid" :style="{ gridTemplateColumns: `60px repeat(${cols}, 1fr)` }">
           <div v-for="r in rows" :key="`r-${r}`" class="row-label">第{{ r }}排</div>

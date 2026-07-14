@@ -95,7 +95,7 @@ public class ReservationServiceImpl implements ReservationService {
         if (r.getStatus() != Reservation.STATUS_BOOKED) throw new BusinessException("cannot sign in");
 
         LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(r.getCreateTime().plusMinutes(1))) {
+        if (now.isAfter(r.getCreateTime().plusMinutes(30))) {
             throw new BusinessException("sign-in window expired (30 min)");
         }
 

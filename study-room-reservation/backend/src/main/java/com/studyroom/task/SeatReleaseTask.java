@@ -31,7 +31,7 @@ public class SeatReleaseTask {
 
         String sql = "SELECT * FROM reservation WHERE status = ? " +
                      "AND create_time < ? AND sign_time IS NULL";
-        LocalDateTime deadline = LocalDateTime.now().minusMinutes(1);
+        LocalDateTime deadline = LocalDateTime.now().minusMinutes(30);
 
         try {
             List<Reservation> timeoutList = jdbcTemplate.query(sql,

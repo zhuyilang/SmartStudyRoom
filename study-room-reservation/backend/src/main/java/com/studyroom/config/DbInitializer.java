@@ -73,11 +73,11 @@ public class DbInitializer implements CommandLineRunner {
         // 自动生成座位
         try {
             List<Map<String, Object>> rooms = jdbcTemplate.queryForList(
-                    "SELECT id, total_rows, total_cols FROM room");
+                    "SELECT id, row_count, col_count FROM room");
             for (Map<String, Object> room : rooms) {
                 Long roomId = ((Number) room.get("id")).longValue();
-                int rows = ((Number) room.get("total_rows")).intValue();
-                int cols = ((Number) room.get("total_cols")).intValue();
+                int rows = ((Number) room.get("row_count")).intValue();
+                int cols = ((Number) room.get("col_count")).intValue();
 
                 Integer count = jdbcTemplate.queryForObject(
                         "SELECT COUNT(*) FROM seat WHERE room_id = ?", Integer.class, roomId);

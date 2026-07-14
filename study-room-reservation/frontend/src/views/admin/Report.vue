@@ -5,6 +5,7 @@
       <el-form :inline="true">
         <el-form-item label="时间范围">
           <el-radio-group v-model="filter.days" @change="loadAll">
+            <el-radio-button :value="1">近 1 天</el-radio-button>
             <el-radio-button :value="7">近 7 天</el-radio-button>
             <el-radio-button :value="14">近 14 天</el-radio-button>
             <el-radio-button :value="30">近 30 天</el-radio-button>
@@ -22,16 +23,10 @@
     </el-card>
 
     <el-row :gutter="16" class="row">
-      <el-col :xs="24" :lg="12">
+      <el-col :span="24">
         <el-card shadow="hover">
-          <template #header><span>📈 预约趋势</span></template>
-          <div ref="trendRef" class="chart"></div>
-        </el-card>
-      </el-col>
-      <el-col :xs="24" :lg="12">
-        <el-card shadow="hover">
-          <template #header><span>⏰ 预约高峰时段</span></template>
-          <div ref="peakRef" class="chart"></div>
+          <template #header><span>📊 各自习室日均使用率</span></template>
+          <div ref="dailyRef" class="chart"></div>
         </el-card>
       </el-col>
     </el-row>
@@ -39,14 +34,14 @@
     <el-row :gutter="16" class="row">
       <el-col :xs="24" :lg="12">
         <el-card shadow="hover">
-          <template #header><span>🏫 校区分布（按座位数）</span></template>
-          <div ref="campusRef" class="chart"></div>
+          <template #header><span>⏰ 预约高峰时段</span></template>
+          <div ref="peakRef" class="chart"></div>
         </el-card>
       </el-col>
       <el-col :xs="24" :lg="12">
         <el-card shadow="hover">
-          <template #header><span>🏆 自习室使用率 TOP</span></template>
-          <div ref="roomRef" class="chart"></div>
+          <template #header><span>🏫 校区分布（按座位数）</span></template>
+          <div ref="campusRef" class="chart"></div>
         </el-card>
       </el-col>
     </el-row>
@@ -57,31 +52,34 @@
 import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import { Refresh } from '@element-plus/icons-vue'
-import { getReservationTrend, getPeakHours, getUsageRate, getRoomUsageRank } from '../../api/report'
+import { getDailyAvgUsage, getPeakHours, getUsageRate } from '../../api/report'
 import { getCampusList } from '../../api/admin'
 
-const filter = reactive({ days: 7, campusId: null })
+const filter = reactive({ days: 1, campusId: null })
 const campuses = ref([])
 
-const trendRef = ref(null)
+const dailyRef = ref(null)
 const peakRef = ref(null)
 const campusRef = ref(null)
-const roomRef = ref(null)
-let cTrend, cPeak, cCampus, cRoom
+let cDaily, cPeak, cCampus
 
-async function loadTrend() {
-  const { data } = await getReservationTrend({ days: filter.days })
-  cTrend.setOption({
-    tooltip: { trigger: 'axis' },
-    legend: { bottom: 0 },
-    grid: { left: 40, right: 20, top: 30, bottom: 40 },
-    xAxis: { type: 'category', data: data.map(d => d.date) },
-    yAxis: { type: 'value' },
-    series: [
-      { name: '预约', type: 'line', smooth: true, data: data.map(d => d.reservations), itemStyle: { color: '#409eff' }, areaStyle: { opacity: 0.15 } },
-      { name: '签到', type: 'line', smooth: true, data: data.map(d => d.checkins), itemStyle: { color: '#67c23a' } },
-      { name: '取消', type: 'line', smooth: true, data: data.map(d => d.cancels), itemStyle: { color: '#f56c6c' } }
-    ]
+async function loadDailyAvgUsage() {
+  const { data } = await getDailyAvgUsage({ days: filter.days })
+  cDaily.setOption({
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    grid: { left: 100, right: 30, top: 20, bottom: 30 },
+    xAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%' } },
+    yAxis: { type: 'category', data: data.map(d => d.roomName).reverse(), axisLabel: { width: 90, overflow: 'truncate' } },
+    series: [{
+      type: 'bar',
+      data: data.map(d => d.avgDailyRate).reverse(),
+      itemStyle: {
+        color: p => p.value >= 80 ? '#f56c6c' : p.value >= 50 ? '#e6a23c' : '#67c23a',
+        borderRadius: [0, 4, 4, 0]
+      },
+      label: { show: true, position: 'right', formatter: '{c}%' },
+      barWidth: 16
+    }]
   })
 }
 async function loadPeak() {
@@ -132,50 +130,29 @@ async function loadPie() {
     }]
   })
 }
-async function loadRoom() {
-  const { data } = await getRoomUsageRank()
-  const top = data.slice().sort((a, b) => b.rate - a.rate).slice(0, 8)
-  cRoom.setOption({
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    grid: { left: 100, right: 30, top: 20, bottom: 30 },
-    xAxis: { type: 'value', max: 100, axisLabel: { formatter: '{value}%' } },
-    yAxis: { type: 'category', data: top.map(d => d.roomName).reverse(), axisLabel: { width: 90, overflow: 'truncate' } },
-    series: [{
-      type: 'bar',
-      data: top.map(d => d.rate).reverse(),
-      itemStyle: {
-        color: p => p.value >= 80 ? '#f56c6c' : p.value >= 50 ? '#e6a23c' : '#67c23a',
-        borderRadius: [0, 4, 4, 0]
-      },
-      label: { show: true, position: 'right', formatter: '{c}%' },
-      barWidth: 16
-    }]
-  })
-}
 
 async function loadAll() {
-  await Promise.all([loadTrend(), loadPeak(), loadPie(), loadRoom()])
+  await Promise.all([loadDailyAvgUsage(), loadPeak(), loadPie()])
 }
 
 function init() {
-  cTrend = echarts.init(trendRef.value)
+  cDaily = echarts.init(dailyRef.value)
   cPeak = echarts.init(peakRef.value)
   cCampus = echarts.init(campusRef.value)
-  cRoom = echarts.init(roomRef.value)
   window.addEventListener('resize', resize)
 }
-function resize() { cTrend?.resize(); cPeak?.resize(); cCampus?.resize(); cRoom?.resize() }
+function resize() { cDaily?.resize(); cPeak?.resize(); cCampus?.resize() }
 
 onMounted(async () => {
   await nextTick()
   init()
-  const { data } = await getCampusList()
-  campuses.value = data
+  const res = await getCampusList()
+  campuses.value = res.data.records || res.data
   await loadAll()
 })
 onBeforeUnmount(() => {
   window.removeEventListener('resize', resize)
-  cTrend?.dispose(); cPeak?.dispose(); cCampus?.dispose(); cRoom?.dispose()
+  cDaily?.dispose(); cPeak?.dispose(); cCampus?.dispose()
 })
 </script>
 

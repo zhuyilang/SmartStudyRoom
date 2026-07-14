@@ -26,10 +26,6 @@
           <template #header>
             <div class="card-header">
               <span>📈 今日预约趋势（按小时）</span>
-              <el-radio-group v-model="trendRange" size="small" @change="loadHourly">
-                <el-radio-button label="today">今日</el-radio-button>
-                <el-radio-button label="week">近 7 天</el-radio-button>
-              </el-radio-group>
             </div>
           </template>
           <div ref="hourlyRef" class="chart"></div>
@@ -59,10 +55,25 @@
               </el-select>
             </div>
           </template>
-          <div ref="heatmapRef" class="chart"></div>
+          <div ref="heatmapRef" class="chart heatmap-chart"></div>
         </el-card>
       </el-col>
       <el-col :xs="24" :lg="12">
+        <el-card shadow="hover" class="chart-card">
+          <template #header>
+            <div class="card-header">
+              <span>🟢 实时座位占用状态</span>
+              <el-select v-model="realTimeRoomId" size="small" style="width: 240px" @change="loadRealTime">
+                <el-option v-for="r in roomOptions" :key="r.roomId" :label="r.roomName" :value="r.roomId" />
+              </el-select>
+            </div>
+          </template>
+          <div ref="realTimeRef" class="chart realtime-chart"></div>
+        </el-card>
+      </el-col>
+    </el-row>
+    <el-row :gutter="16" class="chart-row">
+      <el-col :xs="24" :lg="24">
         <el-card shadow="hover" class="chart-card">
           <template #header><span>📊 各自习室实时使用率</span></template>
           <div ref="roomBarRef" class="chart"></div>
@@ -99,7 +110,7 @@ const statCards = computed(() => [
   {
     label: '使用中 / 已预约',
     value: stats.occupiedSeats ?? '-',
-    sub: `空闲 ${stats.availableSeats ?? 0} 个`,
+    sub: `空闲 ${stats.freeSeats ?? 0} 个`,
     icon: 'UserFilled',
     bg: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
   },
@@ -112,23 +123,24 @@ const statCards = computed(() => [
   },
   {
     label: '使用率',
-    value: stats.utilizationRate ?? 0,
+    value: stats.usageRate ?? 0,
     unit: '%',
-    sub: stats.utilizationRate >= 80 ? '🔥 高位运行' : stats.utilizationRate >= 50 ? '正常' : '空闲较多',
+    sub: stats.usageRate >= 80 ? '🔥 高位运行' : stats.usageRate >= 50 ? '正常' : '空闲较多',
     icon: 'TrendCharts',
     bg: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
   }
 ])
 
-const trendRange = ref('today')
 const heatmapRoomId = ref(null)
+const realTimeRoomId = ref(null)
 const roomOptions = ref([])
 
 const hourlyRef = ref(null)
 const pieRef = ref(null)
 const heatmapRef = ref(null)
+const realTimeRef = ref(null)
 const roomBarRef = ref(null)
-let chartHourly, chartPie, chartHeat, chartRoomBar
+let chartHourly, chartPie, chartHeat, chartRoomBar, chartRealTime
 
 async function loadOverall() {
   const { data } = await getOverallStats()
@@ -137,25 +149,25 @@ async function loadOverall() {
 
 async function loadHourly() {
   const { data } = await getTodayStats()
-  const xs = trendRange.value === 'today' ? data.hourly.map(h => h.hour) : await loadWeek()
-  const ys = trendRange.value === 'today' ? data.hourly.map(h => h.count) : (await loadWeek()).map(d => d.reservations)
-  const series = trendRange.value === 'today'
-    ? [{ name: '预约数', type: 'line', smooth: true, data: ys, areaStyle: { opacity: 0.2 }, itemStyle: { color: '#409eff' } }]
-    : [
-        { name: '预约', type: 'line', smooth: true, data: ys, itemStyle: { color: '#409eff' } },
-        { name: '签到', type: 'line', smooth: true, data: (await loadWeek()).map(d => d.checkins), itemStyle: { color: '#67c23a' } },
-        { name: '取消', type: 'line', smooth: true, data: (await loadWeek()).map(d => d.cancels), itemStyle: { color: '#f56c6c' } }
-      ]
+  const xs = Array.from({length: 24}, (_, i) => i)
+  function toMap(arr) {
+    const m = {}
+    ;(arr||[]).forEach(function(h) { m[h.hour] = h.count })
+    return xs.map(function(h) { return m[h] || 0 })
+  }
   chartHourly.setOption({
     tooltip: { trigger: 'axis' },
     legend: { bottom: 0 },
     grid: { left: 40, right: 20, top: 30, bottom: 40 },
     xAxis: { type: 'category', data: xs, axisLine: { lineStyle: { color: '#dcdfe6' } } },
     yAxis: { type: 'value', splitLine: { lineStyle: { type: 'dashed' } } },
-    series
+    series: [
+      { name: '\u9884\u7ea6', type: 'line', smooth: true, data: toMap(data.hourly), areaStyle: { opacity: 0.2 }, itemStyle: { color: '#409eff' } },
+      { name: '\u7b7e\u5230', type: 'line', smooth: true, data: toMap(data.hourlySignins), itemStyle: { color: '#67c23a' } },
+      { name: '\u53d6\u6d88', type: 'line', smooth: true, data: toMap(data.hourlyCancels), itemStyle: { color: '#f56c6c' } }
+    ]
   })
 }
-
 async function loadWeek() {
   const { data } = await getOverallStats()
   return data.weekTrend
@@ -186,6 +198,7 @@ async function loadRoomBar() {
   const { data } = await getSeatStatus()
   roomOptions.value = data
   if (!heatmapRoomId.value && data.length) heatmapRoomId.value = data[0].roomId
+  if (!realTimeRoomId.value && data.length) realTimeRoomId.value = data[0].roomId
   const top = data.slice().sort((a, b) => b.rate - a.rate).slice(0, 10)
   chartRoomBar.setOption({
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: '{b}<br/>使用率：{c}%' },
@@ -209,62 +222,60 @@ async function loadRoomBar() {
 
 async function loadHeatmap() {
   if (!heatmapRoomId.value) return
-  const { data } = await getHeatmap(heatmapRoomId.value)
-  // x: 列, y: 行, value: 7天累计
-  // 改造成 行 × 列 矩阵
-  const days = data.days
+  const res = await getHeatmap(heatmapRoomId.value)
+  const d = res.data
+  const rows = Number(d.rows) || 0
+  const cols = Number(d.cols) || 0
+  if (!rows || !cols) return
+  const usage = d.daySeats || []
+  const maxVal = Math.max(1, ...usage.map(x=>Number(x.usageCount)))
   const matrix = []
-  for (let r = 0; r < data.rows; r++) {
-    const row = []
-    for (let c = 0; c < data.cols; c++) {
-      let v = 0
-      for (let day = 0; day < days.length; day++) {
-        const found = data.data.find(d => d[0] === c && d[1] === r)
-        if (found) v += found[2]
-      }
-      row.push([r, c, v])
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const s = usage.find(x => Number(x.row) === r + 1 && Number(x.col) === c + 1)
+      matrix.push([c, r, s ? Number(s.usageCount) : 0])
     }
-    matrix.push(...row)
   }
   chartHeat.setOption({
-    tooltip: {
-      formatter: p => `第${p.value[0] + 1}排 第${p.value[1] + 1}列<br/>7天使用：<b>${p.value[2]}</b> 次`
-    },
-    grid: { left: 60, right: 20, top: 30, bottom: 60 },
-    xAxis: {
-      type: 'category',
-      data: Array.from({ length: data.cols }, (_, i) => `列${i + 1}`),
-      splitArea: { show: true }
-    },
-    yAxis: {
-      type: 'category',
-      data: Array.from({ length: data.rows }, (_, i) => `行${i + 1}`),
-      splitArea: { show: true }
-    },
-    visualMap: {
-      min: 0,
-      max: 14,
-      calculable: true,
-      orient: 'horizontal',
-      left: 'center',
-      bottom: 10,
-      inRange: { color: ['#50e3c2', '#ffd666', '#f56c6c'] }
-    },
-    series: [{
-      name: '使用频次',
-      type: 'heatmap',
-      data: matrix,
-      label: { show: true, color: '#fff', fontSize: 10 },
-      emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0, 0, 0, 0.5)' } }
-    }]
+    grid: { left: 50, right: 30, top: 20, bottom: 70, containLabel: true },
+    xAxis: { type: 'category', data: Array.from({length: cols}, (_,i)=>i+1+''), splitArea: {show: true} },
+    yAxis: { type: 'category', data: Array.from({length: rows}, (_,i)=>i+1+''), splitArea: {show: true} },
+    visualMap: { min: 0, max: maxVal, calculable: true, orient: 'horizontal', left: 'center', bottom: 10, inRange: { color: ['#50e3c2', '#ffd666', '#f56c6c'] } },
+    series: [{ type: 'heatmap', data: matrix, label: { show: true, fontSize: 10 } }]
   })
+  chartHeat.resize()
 }
-
+async function loadRealTime() {
+  if (!realTimeRoomId.value) return
+  const res = await getHeatmap(realTimeRoomId.value)
+  const d = res.data
+  const rows = Number(d.rows) || 0
+  const cols = Number(d.cols) || 0
+  if (!rows || !cols) return
+  const seats = d.seats || []
+  const matrix = []
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const s = seats.find(x => Number(x.row) === r + 1 && Number(x.col) === c + 1)
+      const st = s ? Number(s.status) : 0
+      matrix.push([c, r, st])
+    }
+  }
+  chartRealTime.setOption({
+    grid: { left: 50, right: 30, top: 20, bottom: 30, containLabel: true },
+    xAxis: { type: `category`, data: Array.from({length: cols}, (_,i)=>i+1+''), splitArea: {show: true} },
+    yAxis: { type: `category`, data: Array.from({length: rows}, (_,i)=>i+1+''), splitArea: {show: true} },
+    visualMap: { show: false, min: 0, max: 2, inRange: { color: ['#67c23a', '#f56c6c', '#909399'] } },
+    series: [{ type: `heatmap`, data: matrix, label: { show: true, fontSize: 10 } }]
+  })
+  chartRealTime.resize()
+}
 function initCharts() {
   chartHourly = echarts.init(hourlyRef.value)
   chartPie = echarts.init(pieRef.value)
   chartHeat = echarts.init(heatmapRef.value)
   chartRoomBar = echarts.init(roomBarRef.value)
+  chartRealTime = echarts.init(realTimeRef.value)
   window.addEventListener('resize', resize)
 }
 function resize() {
@@ -272,10 +283,13 @@ function resize() {
   chartPie?.resize()
   chartHeat?.resize()
   chartRoomBar?.resize()
+  chartRealTime?.resize()
 }
 
 async function refreshAll() {
-  await Promise.all([loadOverall(), loadHourly(), loadPie(), loadRoomBar(), loadHeatmap()])
+  await Promise.all([loadOverall(), loadHourly(), loadPie(), loadRoomBar()])
+  await loadHeatmap()
+  await loadRealTime()
 }
 
 onMounted(async () => {
@@ -294,6 +308,7 @@ onBeforeUnmount(() => {
   chartPie?.dispose()
   chartHeat?.dispose()
   chartRoomBar?.dispose()
+  chartRealTime?.dispose()
 })
 </script>
 
@@ -335,6 +350,8 @@ onBeforeUnmount(() => {
   justify-content: space-between;
 }
 .chart { height: 320px; width: 100%; }
+.realtime-chart { height: 250px !important; }
+.heatmap-chart { height: 250px !important; }
 .footer-tip {
   text-align: center;
   color: #909399;

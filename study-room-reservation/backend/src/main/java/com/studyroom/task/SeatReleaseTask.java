@@ -24,14 +24,14 @@ public class SeatReleaseTask {
     @Autowired private SeatStatusService seatStatusService;
 
     /** Auto-release overdue reservations */
-    @Scheduled(cron = "0 */5 * * * ?")
+    @Scheduled(cron = "*/30 * * * * ?")
     @Transactional
     public void releaseTimeoutSeats() {
         log.info("=== Check overdue reservations ===");
 
         String sql = "SELECT * FROM reservation WHERE status = ? " +
                      "AND create_time < ? AND sign_time IS NULL";
-        LocalDateTime deadline = LocalDateTime.now().minusMinutes(30);
+        LocalDateTime deadline = LocalDateTime.now().minusMinutes(1);
 
         try {
             List<Reservation> timeoutList = jdbcTemplate.query(sql,

@@ -37,4 +37,8 @@ public interface ReservationMapper extends BaseMapper<Reservation> {
             "ORDER BY create_time DESC</script>")
     List<Reservation> findByUserIdAndStatus(@Param("userId") Long userId,
                                              @Param("status") Integer status);
+
+    /** Count user active reservations (status 0=booked or 1=signed_in) */
+    @Select("SELECT COUNT(*) FROM reservation WHERE user_id = #{userId} AND status IN (0, 1)")
+    int countActiveByUser(@Param("userId") Long userId);
 }

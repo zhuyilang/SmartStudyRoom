@@ -23,7 +23,7 @@ public class BlacklistServiceImpl implements BlacklistService {
     @Autowired private JdbcTemplate jdbcTemplate;
 
     private static final int MISS_THRESHOLD = 3;
-    private static final int BAN_DAYS = 3;
+    private static final int BAN_DAYS = 10;
 
     @Override
     public boolean isBanned(Long userId) {

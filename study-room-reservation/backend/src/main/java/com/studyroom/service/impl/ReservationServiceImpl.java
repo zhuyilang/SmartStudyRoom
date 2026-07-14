@@ -35,6 +35,12 @@ public class ReservationServiceImpl implements ReservationService {
             throw new BusinessException("blacklisted");
         }
 
+        // one active reservation per user
+        int activeCount = reservationMapper.countActiveByUser(userId);
+        if (activeCount > 0) {
+            throw new BusinessException("Already have active reservation, cancel first");
+        }
+
         int todayCount = reservationMapper.countTodayReservations(userId);
         if (todayCount >= MAX_DAILY_RESERVATIONS) {
             throw new BusinessException("daily limit: " + MAX_DAILY_RESERVATIONS);
@@ -89,7 +95,7 @@ public class ReservationServiceImpl implements ReservationService {
         if (r.getStatus() != Reservation.STATUS_BOOKED) throw new BusinessException("cannot sign in");
 
         LocalDateTime now = LocalDateTime.now();
-        if (now.isAfter(r.getCreateTime().plusMinutes(30))) {
+        if (now.isAfter(r.getCreateTime().plusMinutes(1))) {
             throw new BusinessException("sign-in window expired (30 min)");
         }
 
